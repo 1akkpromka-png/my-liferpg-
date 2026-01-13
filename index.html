@@ -3,112 +3,108 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Hero RPG: Cyberpunk Protocol</title>
+    <title>Hero RPG: Glass Edition</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         :root {
-            --bg: #050505;
-            --neon-blue: #00ffff;
-            --neon-pink: #ff00ff;
-            --neon-yellow: #fdf001;
-            --hp-red: #ff2a6d;
-            --card-bg: rgba(15, 15, 15, 0.9);
-            --border-glow: 0 0 10px rgba(0, 255, 255, 0.3);
+            --glass-bg: rgba(255, 255, 255, 0.1);
+            --glass-border: rgba(255, 255, 255, 0.2);
+            --accent: #ffffff;
+            --blue: #4facfe;
+            --pink: #ee9ca7;
+            --hp: #ff5e62;
+            --gold: #ffb347;
+            --text: #ffffff;
         }
 
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
         body {
-            background: var(--bg);
-            background-image: 
-                linear-gradient(rgba(0, 255, 255, 0.05) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(0, 255, 255, 0.05) 1px, transparent 1px);
-            background-size: 30px 30px;
-            color: #e0e0e0;
-            font-family: 'Courier New', Courier, monospace;
-            margin: 0; padding: 16px; padding-bottom: 120px;
+            background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+            background-attachment: fixed;
+            color: var(--text);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            margin: 0; padding: 16px; padding-bottom: 100px;
             min-height: 100vh;
         }
 
-        /* --- КИБЕР-КАРТОЧКИ --- */
-        .cyber-card {
-            background: var(--card-bg);
-            border: 1px solid var(--neon-blue);
-            box-shadow: var(--border-glow);
+        /* Эффект стекла для карточек */
+        .glass-card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            border: 1px solid var(--glass-border);
+            border-radius: 24px;
             padding: 20px;
             margin-bottom: 20px;
-            position: relative;
-            clip-path: polygon(0 0, 100% 0, 100% calc(100% - 15px), calc(100% - 15px) 100%, 0 100%);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
         }
 
-        .cyber-card::after {
-            content: "SYSTEM.LOG"; position: absolute; top: 2px; right: 10px;
-            font-size: 8px; color: var(--neon-blue); opacity: 0.5;
-        }
-
-        /* --- ПЕРСОНАЖ И АУРА --- */
-        .aura-wrapper {
-            width: 130px; height: 130px; margin: 0 auto;
+        /* Аура героя */
+        .hero-section { text-align: center; position: relative; }
+        .aura {
+            width: 140px; height: 140px; margin: 0 auto;
             border-radius: 50%; display: flex; align-items: center; justify-content: center;
-            position: relative; transition: all 0.5s; border: 1px solid transparent;
+            transition: all 1s ease; position: relative;
+            background: rgba(255,255,255,0.05);
+            animation: breathe 4s infinite ease-in-out;
         }
-        
-        .aura-scan {
-            position: absolute; inset: -5px; border: 2px solid var(--neon-blue);
-            border-radius: 50%; opacity: 0.3;
-            animation: scan 3s linear infinite;
-        }
-        @keyframes scan { 
-            0% { transform: scale(1); opacity: 0.8; }
-            50% { transform: scale(1.1); opacity: 0.2; }
-            100% { transform: scale(1); opacity: 0.8; }
+        @keyframes breathe {
+            0%, 100% { transform: scale(1); box-shadow: 0 0 20px rgba(255,255,255,0.1); }
+            50% { transform: scale(1.05); box-shadow: 0 0 40px rgba(255,255,255,0.2); }
         }
 
-        .hero-avatar { font-size: 50px; display: flex; align-items: center; z-index: 5; position: relative; }
-        #vis-head { position: absolute; top: -25px; left: 50%; transform: translateX(-50%); font-size: 35px; z-index: 6; }
-        #vis-weap { position: absolute; right: -25px; font-size: 35px; transform: scaleX(-1); z-index: 6; }
+        .avatar-main { font-size: 60px; z-index: 2; position: relative; }
+        #vis-head { position: absolute; top: -15px; left: 50%; transform: translateX(-50%); font-size: 35px; z-index: 3; }
+        #vis-weap { position: absolute; right: -10px; bottom: 10px; font-size: 35px; z-index: 3; }
 
-        .cyber-bar-container {
-            height: 12px; background: #111; border: 1px solid #333;
-            margin: 10px 0; position: relative; overflow: hidden;
+        /* Прогресс-бары */
+        .progress-container {
+            height: 10px; background: rgba(0,0,0,0.2);
+            border-radius: 10px; margin: 10px 0; overflow: hidden;
         }
-        .cyber-bar-fill { height: 100%; transition: width 0.6s ease; position: relative; }
+        .progress-fill { height: 100%; border-radius: 10px; transition: width 0.8s ease; }
 
-        /* --- ТАБЫ --- */
-        .tabs { display: flex; gap: 5px; margin-bottom: 20px; overflow-x: auto; }
+        /* Табы (меню) */
+        .tabs { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 10px; margin-bottom: 10px; }
         .tab-btn {
-            background: transparent; border: 1px solid var(--neon-blue);
-            color: var(--neon-blue); padding: 10px 15px; font-weight: bold;
-            font-family: inherit; font-size: 11px; text-transform: uppercase;
+            background: var(--glass-bg); border: 1px solid var(--glass-border);
+            color: rgba(255,255,255,0.6); padding: 10px 18px; border-radius: 16px;
+            font-size: 13px; font-weight: 600; white-space: nowrap; transition: 0.3s;
         }
-        .tab-btn.active { background: var(--neon-blue); color: #000; box-shadow: 0 0 15px var(--neon-blue); }
+        .tab-btn.active { background: #fff; color: #000; border-color: #fff; }
 
-        .quest-box {
-            background: rgba(0, 255, 255, 0.03); border: 1px solid rgba(0, 255, 255, 0.1);
+        /* Кнопки */
+        .btn-main {
+            width: 100%; padding: 16px; border-radius: 20px; border: none;
+            background: linear-gradient(45deg, var(--blue), #a1c4fd);
+            color: #fff; font-weight: 700; font-size: 15px; margin-top: 10px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+        .btn-main:active { transform: scale(0.98); }
+
+        /* Задачи */
+        .task-item {
+            background: rgba(255,255,255,0.05); border-radius: 18px;
             padding: 15px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center;
         }
-        .quest-box.done { opacity: 0.3; border-color: #333; }
+        .task-item.done { opacity: 0.4; filter: grayscale(1); }
 
-        .btn-cyber {
-            width: 100%; padding: 15px; background: transparent; 
-            border: 2px solid var(--neon-pink); color: var(--neon-pink);
-            font-weight: bold; font-family: inherit; text-transform: uppercase;
-            margin-top: 10px;
-        }
-
-        #modal-overlay {
-            position: fixed; inset: 0; background: rgba(0,0,0,0.95);
-            z-index: 9999; display: none; padding: 25px; border: 2px solid var(--neon-blue);
+        /* Модалка */
+        #modal {
+            position: fixed; inset: 0; background: rgba(0,0,0,0.8);
+            backdrop-filter: blur(10px); z-index: 9999; display: none; padding: 30px;
         }
         input, select {
-            width: 100%; background: #111; border: 1px solid var(--neon-blue);
-            padding: 12px; color: var(--neon-blue); margin-bottom: 15px; font-family: inherit;
+            width: 100%; background: rgba(255,255,255,0.1); border: 1px solid var(--glass-border);
+            padding: 14px; color: #fff; border-radius: 12px; margin-bottom: 15px; outline: none;
         }
+
         .hidden { display: none !important; }
 
-        /* Loader */
+        /* Загрузчик */
         #loader {
-            position: fixed; inset: 0; background: #000; z-index: 10000;
+            position: fixed; inset: 0; background: #0f2027; z-index: 10000;
             display: flex; flex-direction: column; justify-content: center; align-items: center;
         }
     </style>
@@ -116,88 +112,83 @@
 <body>
 
 <div id="loader">
-    <div style="color: var(--neon-blue); font-size: 18px; margin-bottom: 10px;">> CONNECTING_TO_GRID...</div>
-    <div style="width: 200px; height: 2px; background: #222;">
-        <div id="load-bar" style="width: 0%; height: 100%; background: var(--neon-blue); transition: width 0.3s;"></div>
+    <div style="font-weight: 300; letter-spacing: 2px; margin-bottom: 20px;">ЗАГРУЗКА ДАННЫХ...</div>
+    <div style="width: 200px; height: 3px; background: rgba(255,255,255,0.1); border-radius: 5px;">
+        <div id="load-bar" style="width: 0%; height: 100%; background: #fff; transition: width 0.3s;"></div>
     </div>
 </div>
 
-<div class="cyber-card">
-    <div style="display: flex; justify-content: space-between; font-size: 10px; margin-bottom: 10px;">
-        <span id="rank-txt">USER_ID: UNKNOWN</span>
-        <span id="total-lvl">LVL: 01</span>
+<div class="glass-card hero-section">
+    <div style="display: flex; justify-content: space-between; font-size: 12px; opacity: 0.7; font-weight: bold;">
+        <span id="rank-name">НОВИЧОК</span>
+        <span>УРОВЕНЬ <span id="total-lvl">1</span></span>
     </div>
 
-    <div class="aura-wrapper" id="aura">
-        <div class="aura-scan"></div>
-        <div class="hero-avatar">
-            <span id="vis-head"></span>
-            <span id="vis-body">👶</span>
-            <span id="vis-weap"></span>
-        </div>
+    <div class="aura" id="hero-aura">
+        <span id="vis-head"></span>
+        <div class="avatar-main">👶</div>
+        <span id="vis-weap"></span>
     </div>
 
-    <div style="display: flex; justify-content: space-between; margin-top: 20px; font-size: 12px; font-weight: bold;">
-        <span style="color: var(--hp-red);">HP: <span id="hp-val">100</span></span>
-        <span style="color: var(--neon-yellow);">CREDITS: <span id="gold-val">0</span></span>
+    <div style="display: flex; justify-content: space-between; margin-top: 15px; font-size: 13px; font-weight: 800;">
+        <span style="color: var(--hp);">❤️ ЖИЗНЬ: <span id="hp-val">100</span></span>
+        <span style="color: var(--gold);">💰 ЗОЛОТО: <span id="gold-val">0</span></span>
     </div>
-    <div class="cyber-bar-container">
-        <div id="hp-bar" class="cyber-bar-fill" style="background: var(--hp-red); width: 100%;"></div>
+    <div class="progress-container">
+        <div id="hp-bar" class="progress-fill" style="background: var(--hp); width: 100%;"></div>
     </div>
 </div>
 
 <div class="tabs">
-    <button class="tab-btn active" onclick="switchTab(event, 'tasks')">TASKS</button>
-    <button class="tab-btn" onclick="switchTab(event, 'shop')">ARMORY</button>
-    <button class="tab-btn" onclick="switchTab(event, 'piggy')">VAULT</button>
-    <button class="tab-btn" onclick="switchTab(event, 'hero')">STATUS</button>
+    <button class="tab-btn active" onclick="switchTab(event, 'tasks')">ЗАДАЧИ</button>
+    <button class="tab-btn" onclick="switchTab(event, 'shop')">АРСЕНАЛ</button>
+    <button class="tab-btn" onclick="switchTab(event, 'piggy')">КОПИЛКА</button>
+    <button class="tab-btn" onclick="switchTab(event, 'stats')">ГЕРОЙ</button>
 </div>
 
 <div id="tab-tasks">
     <div id="quest-list"></div>
-    <button class="btn-cyber" onclick="openModal()">+ INITIALIZE_QUEST</button>
+    <button class="btn-main" onclick="openModal()">+ НОВАЯ ЗАДАЧА</button>
 </div>
 
 <div id="tab-shop" class="hidden">
-    <div class="cyber-card">
-        <div style="color: var(--neon-blue); margin-bottom: 10px;">> BLACK_MARKET</div>
-        <div id="shop-gear-list"></div>
-        <div style="margin: 20px 0; border-top: 1px dashed #444;"></div>
-        <div id="shop-perks-list"></div>
+    <div class="glass-card">
+        <h3 style="margin:0 0 15px 0;">Магазин снаряжения</h3>
+        <div id="shop-items"></div>
+        <h3 style="margin:20px 0 15px 0;">Улучшения</h3>
+        <div id="shop-perks"></div>
     </div>
 </div>
 
 <div id="tab-piggy" class="hidden">
-    <div class="cyber-card" style="border-color: var(--neon-yellow);">
+    <div class="glass-card">
         <div id="piggy-content"></div>
     </div>
 </div>
 
-<div id="tab-hero" class="hidden">
+<div id="tab-stats" class="hidden">
     <div id="skills-list"></div>
 </div>
 
-<div id="modal-overlay">
-    <h3 style="color: var(--neon-blue);">NEW_DATA_ENTRY</h3>
-    <input type="text" id="inp-title" placeholder="QUEST_NAME">
-    <div style="display: flex; gap: 10px;">
-        <input type="time" id="inp-start">
-        <input type="time" id="inp-end">
+<div id="modal">
+    <div class="glass-card">
+        <h3 style="margin-top:0;">Создать квест</h3>
+        <input type="text" id="inp-title" placeholder="Название задачи...">
+        <select id="inp-day">
+            <option value="0">Понедельник</option><option value="1">Вторник</option>
+            <option value="2">Среда</option><option value="3">Четверг</option>
+            <option value="4">Пятница</option><option value="5">Суббота</option><option value="6">Воскресенье</option>
+        </select>
+        <select id="inp-cat" onchange="document.getElementById('inp-custom').classList.toggle('hidden', this.value !== 'new')">
+            <option value="money">💰 Деньги</option>
+            <option value="education">📚 Обучение</option>
+            <option value="health">💪 Здоровье</option>
+            <option value="new">+ Своя сфера...</option>
+        </select>
+        <input type="text" id="inp-custom" class="hidden" placeholder="Назовите новую сферу">
+        <button class="btn-main" onclick="saveQuest()">СОХРАНИТЬ</button>
+        <button onclick="closeModal()" style="width:100%; background:none; border:none; color:#aaa; margin-top:15px;">ОТМЕНА</button>
     </div>
-    <select id="inp-day">
-        <option value="0">MONDAY</option><option value="1">TUESDAY</option>
-        <option value="2">WEDNESDAY</option><option value="3">THURSDAY</option>
-        <option value="4">FRIDAY</option><option value="5">SATURDAY</option><option value="6">SUNDAY</option>
-    </select>
-    <select id="inp-cat" onchange="document.getElementById('inp-custom').classList.toggle('hidden', this.value !== 'new_cat')">
-        <option value="money">MONEY_NODE</option>
-        <option value="education">INTEL_NODE</option>
-        <option value="health">BIO_NODE</option>
-        <option value="new_cat">++ ADD_NEW_NODE</option>
-    </select>
-    <input type="text" id="inp-custom" class="hidden" placeholder="NODE_ID_NAME">
-    <button class="btn-cyber" style="border-color: var(--neon-blue); color: var(--neon-blue);" onclick="saveQuest()">UPLOAD</button>
-    <button onclick="closeModal()" style="width: 100%; background: none; border: none; color: #555; margin-top: 15px;">ABORT</button>
 </div>
 
 <script>
@@ -207,14 +198,14 @@
 
     const DB = {
         gear: {
-            'h1': { name: 'CYBER_HELM', icon: '🪖', price: 500, slot: 'head' },
-            'h2': { name: 'NEON_CROWN', icon: '👑', price: 2500, slot: 'head' },
-            'w1': { name: 'DATA_BLADE', icon: '🗡️', price: 800, slot: 'weapon' },
-            'w2': { name: 'LINK_STAFF', icon: '🪄', price: 1500, slot: 'weapon' }
+            'h1': { n: 'Боевой шлем', i: '🪖', p: 500, s: 'head' },
+            'h2': { n: 'Корона короля', i: '👑', p: 2500, s: 'head' },
+            'w1': { n: 'Меч новичка', i: '🗡️', p: 800, s: 'weapon' },
+            'w2': { n: 'Посох мага', i: '🪄', p: 1500, s: 'weapon' }
         },
         perks: {
-            'gold_boost': { name: 'OVERCLOCK', desc: '+20% CREDITS', price: 1000 },
-            'def': { name: 'FIREWALL', desc: '-50% DMG TAKEN', price: 1500 }
+            'boost': { n: 'Ускоритель', d: '+20% золота', p: 1000 },
+            'def': { n: 'Щит', d: '-50% урона', p: 1500 }
         }
     };
 
@@ -228,63 +219,57 @@
 
     let isLoaded = false;
 
-    // --- ИСПРАВЛЕННАЯ ИНИЦИАЛИЗАЦИЯ ---
     function init() {
-        // Таймер для визуального прогресса загрузки
         let p = 0;
-        const bar = document.getElementById('load-bar');
         const interval = setInterval(() => {
-            p += 5; bar.style.width = p + '%';
-            if(p >= 90) clearInterval(interval);
-        }, 50);
+            p += 2; if(p <= 95) document.getElementById('load-bar').style.width = p + '%';
+        }, 100);
 
-        // Предохранитель: если облако не ответит за 2 сек, идем дальше
+        // Тайм-аут ожидания облака изменен на 10 секунд (10000 мс)
         const cloudTimeout = setTimeout(() => {
-            if(!isLoaded) finalizeInit("TIMEOUT_FALLBACK");
-        }, 2000);
+            if(!isLoaded) finalizeInit("TIMEOUT");
+        }, 10000);
 
-        tg.CloudStorage.getItem('cyber_save_v23', (err, value) => {
+        tg.CloudStorage.getItem('rpg_glass_v24', (err, value) => {
             clearTimeout(cloudTimeout);
             if(!isLoaded) {
                 if(!err && value) {
                     try { state = JSON.parse(value); } catch(e) {}
                 } else {
-                    const local = localStorage.getItem('cyber_save_v23');
+                    const local = localStorage.getItem('rpg_glass_v24');
                     if(local) try { state = JSON.parse(local); } catch(e) {}
                 }
-                finalizeInit("CLOUD_SUCCESS");
+                finalizeInit("SUCCESS");
             }
         });
     }
 
-    function finalizeInit(reason) {
+    function finalizeInit(res) {
         isLoaded = true;
-        console.log("Init finished via:", reason);
         document.getElementById('load-bar').style.width = '100%';
-        checkDailyPenalty();
+        checkPenalty();
         render();
-        setTimeout(() => {
-            document.getElementById('loader').style.display = 'none';
-        }, 500);
+        setTimeout(() => document.getElementById('loader').style.display = 'none', 500);
     }
 
     function save() {
         const data = JSON.stringify(state);
-        localStorage.setItem('cyber_save_v23', data);
-        tg.CloudStorage.setItem('cyber_save_v23', data);
+        localStorage.setItem('rpg_glass_v24', data);
+        tg.CloudStorage.setItem('rpg_glass_v24', data);
         render();
     }
 
-    function checkDailyPenalty() {
+    function checkPenalty() {
         const today = new Date().toDateString();
         if(state.lastLogin !== today) {
             const yesterday = (new Date().getDay() + 5) % 7;
             const missed = state.quests.filter(q => parseInt(q.day) === yesterday && !q.done);
             if(missed.length > 0) {
-                let dmg = missed.length * 15;
+                let dmg = missed.length * 10;
                 if(state.perks.includes('def')) dmg = Math.floor(dmg/2);
                 state.hp = Math.max(0, state.hp - dmg);
             }
+            state.quests.forEach(q => q.done = false); // Сброс статуса задач на новый день
             state.lastLogin = today;
             save();
         }
@@ -297,70 +282,82 @@
 
         let totalLvl = 0;
         for(let s in state.skills) totalLvl += state.skills[s].lvl;
-        document.getElementById('total-lvl').innerText = 'LVL: ' + (totalLvl < 10 ? '0'+totalLvl : totalLvl);
+        document.getElementById('total-lvl').innerText = totalLvl;
         
-        // Ранг
-        let r = "NOVICE_USER";
-        if(totalLvl > 10) r = "SYSTEM_ADMIN";
-        if(totalLvl > 30) r = "NET_RUNNER";
-        document.getElementById('rank-txt').innerText = "ID: " + r;
+        const aura = document.getElementById('hero-aura');
+        if(totalLvl < 10) { 
+            aura.style.boxShadow = "0 0 20px rgba(255,255,255,0.2)"; 
+            document.getElementById('rank-name').innerText = "НОВИЧОК";
+        } else if(totalLvl < 30) {
+            aura.style.boxShadow = "0 0 30px var(--blue)"; 
+            document.getElementById('rank-name').innerText = "ГЕРОЙ";
+        } else {
+            aura.style.boxShadow = "0 0 40px var(--pink)";
+            document.getElementById('rank-name').innerText = "ЛЕГЕНДА";
+        }
 
-        document.getElementById('vis-head').innerText = state.equipped.head ? DB.gear[state.equipped.head].icon : '';
-        document.getElementById('vis-weap').innerText = state.equipped.weapon ? DB.gear[state.equipped.weapon].icon : '';
+        document.getElementById('vis-head').innerText = state.equipped.head ? DB.gear[state.equipped.head].i : '';
+        document.getElementById('vis-weap').innerText = state.equipped.weapon ? DB.gear[state.equipped.weapon].i : '';
 
         const today = (new Date().getDay() + 6) % 7;
         const dailyQuests = state.quests.filter(q => parseInt(q.day) === today);
         document.getElementById('quest-list').innerHTML = dailyQuests.map((q, i) => {
             const gIdx = state.quests.indexOf(q);
             return `
-                <div class="quest-box ${q.done ? 'done' : ''}">
-                    <div><div style="font-size:9px; color:var(--neon-blue)">[${q.cat.toUpperCase()}]</div><b>${q.title}</b></div>
-                    ${q.done ? `<button onclick="deleteQuest(${gIdx})" style="background:none; border:none; color:var(--hp-red)">[DEL]</button>` : 
-                    `<button onclick="completeQuest(${gIdx})" style="background:var(--neon-blue); border:none; padding:5px 10px; font-weight:bold">OK</button>`}
+                <div class="task-item ${q.done ? 'done' : ''}">
+                    <div><div style="font-size:10px; opacity:0.6;">${q.cat.toUpperCase()}</div><b>${q.title}</b></div>
+                    ${q.done ? `<button onclick="delQuest(${gIdx})" style="background:none; border:none; color:var(--hp); font-size:12px;">УДАЛИТЬ</button>` : 
+                    `<button onclick="doQuest(${gIdx})" style="background:#fff; color:#000; border:none; padding:8px 15px; border-radius:12px; font-weight:bold;">ГОТОВО</button>`}
                 </div>`;
-        }).join('') || '<div style="opacity:0.3; padding:20px;">NO_DATA_NODES</div>';
+        }).join('') || '<div style="text-align:center; opacity:0.5; padding:20px;">На сегодня задач нет</div>';
 
         renderShop();
         renderPiggy();
-
-        document.getElementById('skills-list').innerHTML = Object.keys(state.skills).map(k => `
-            <div class="cyber-card">
-                <div style="display:flex; justify-content:space-between; font-size:10px; margin-bottom:5px;"><span>${k.toUpperCase()}</span><span>LVL ${state.skills[k].lvl}</span></div>
-                <div class="cyber-bar-container"><div class="cyber-bar-fill" style="width:${state.skills[k].xp}%; background:var(--neon-blue)"></div></div>
-            </div>`).join('');
+        renderStats();
     }
 
     function renderShop() {
-        let gearHTML = "";
+        let h = "";
         for(let k in DB.gear) {
-            const it = DB.gear[k]; const has = state.inventory.includes(k); const eq = state.equipped[it.slot] === k;
-            gearHTML += `<div style="display:flex; justify-content:space-between; margin-bottom:10px;">
-                <span>${it.icon} ${it.name}</span>
-                <button onclick="handleGear('${k}')" style="background:${has?(eq?'var(--hp-red)':'var(--neon-blue)'):'var(--neon-yellow)'}; border:none; padding:5px; font-size:10px; font-weight:bold;">
-                ${has?(eq?'OFF':'ON'):it.price}</button></div>`;
+            const it = DB.gear[k]; const has = state.inventory.includes(k); const eq = state.equipped[it.s] === k;
+            h += `<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                <span>${it.i} ${it.n}</span>
+                <button onclick="handleGear('${k}')" style="background:${has?(eq?'var(--hp)':'var(--blue)'):'rgba(255,255,255,0.1)'}; border:none; color:#fff; padding:6px 12px; border-radius:10px; font-size:12px;">
+                ${has?(eq?'СНЯТЬ':'ОДЕТЬ'):it.p + ' 💰'}</button></div>`;
         }
-        document.getElementById('shop-gear-list').innerHTML = gearHTML;
+        document.getElementById('shop-items').innerHTML = h;
 
-        let perkHTML = "";
+        let ph = "";
         for(let k in DB.perks) {
             const p = DB.perks[k]; const has = state.perks.includes(k);
-            perkHTML += `<div style="display:flex; justify-content:space-between; margin-bottom:10px;">
-                <span>${p.name}</span>
-                <button onclick="buyPerk('${k}')" ${has?'disabled':''} style="background:${has?'#333':'var(--neon-pink)'}; border:none; font-size:10px; font-weight:bold;">
-                ${has?'OWNED':p.price}</button></div>`;
+            ph += `<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                <div><b>${p.n}</b><br><small style="opacity:0.6">${p.d}</small></div>
+                <button onclick="buyPerk('${k}')" ${has?'disabled':''} style="background:${has?'#333':'var(--pink)'}; border:none; color:#fff; padding:6px 12px; border-radius:10px; font-size:12px;">
+                ${has?'КУПЛЕНО':p.p}</button></div>`;
         }
-        document.getElementById('shop-perks-list').innerHTML = perkHTML;
+        document.getElementById('shop-perks').innerHTML = ph;
     }
 
     function renderPiggy() {
         const p = state.piggy; const box = document.getElementById('piggy-content');
         if(!p.active) {
-            box.innerHTML = `<button class="btn-cyber" onclick="startPiggy()">INIT_VAULT</button>`;
+            box.innerHTML = `<h3>Копилка на цель</h3><p style="font-size:13px; opacity:0.7;">Откладывай золото на реальные покупки.</p>
+            <button class="btn-main" onclick="startPiggy()">СОЗДАТЬ ЦЕЛЬ</button>`;
         } else {
-            box.innerHTML = `<b>${p.title}</b><br><small>${p.current}/${p.goal}</small>
-            <button class="btn-cyber" onclick="depositPiggy()">+ DEPOSIT</button>
-            <button onclick="state.piggy.active=false; save();" style="background:none; border:none; color:#555; font-size:9px;">RESET</button>`;
+            const pct = Math.min(100, (p.current/p.goal)*100);
+            box.innerHTML = `<h3>${p.title}</h3><div style="font-size:12px; margin-bottom:5px;">Прогресс: ${p.current} / ${p.goal}</div>
+            <div class="progress-container"><div class="progress-fill" style="background:var(--gold); width:${pct}%;"></div></div>
+            <button class="btn-main" style="background:var(--gold)" onclick="depositPiggy()">ПОПОЛНИТЬ</button>
+            <button onclick="state.piggy.active=false; save();" style="background:none; border:none; color:#aaa; width:100%; margin-top:10px;">Сбросить цель</button>`;
         }
+    }
+
+    function renderStats() {
+        document.getElementById('skills-list').innerHTML = Object.keys(state.skills).map(k => `
+            <div class="glass-card" style="padding:15px; margin-bottom:10px;">
+                <div style="display:flex; justify-content:space-between; font-size:12px; margin-bottom:5px;"><span>${k.toUpperCase()}</span><span>УР ${state.skills[k].lvl}</span></div>
+                <div class="progress-container"><div class="progress-fill" style="width:${state.skills[k].xp}%; background:var(--blue)"></div></div>
+            </div>`).join('');
     }
 
     window.switchTab = (e, name) => {
@@ -371,24 +368,24 @@
         document.getElementById('tab-'+name).classList.remove('hidden');
     };
 
-    window.openModal = () => document.getElementById('modal-overlay').style.display = 'block';
-    window.closeModal = () => document.getElementById('modal-overlay').style.display = 'none';
+    window.openModal = () => document.getElementById('modal').style.display = 'block';
+    window.closeModal = () => document.getElementById('modal').style.display = 'none';
 
     window.saveQuest = () => {
         const title = document.getElementById('inp-title').value; if(!title) return;
         let cat = document.getElementById('inp-cat').value;
-        if(cat === 'new_cat') {
-            cat = document.getElementById('inp-custom').value || 'misc';
+        if(cat === 'new') {
+            cat = document.getElementById('inp-custom').value || 'разное';
             if(!state.skills[cat]) state.skills[cat] = {lvl:1, xp:0};
         }
-        state.quests.push({ title, cat, day: document.getElementById('inp-day').value, start: document.getElementById('inp-start').value, done: false });
+        state.quests.push({ title, cat, day: document.getElementById('inp-day').value, done: false });
         closeModal(); save();
     };
 
-    window.completeQuest = (idx) => {
+    window.doQuest = (idx) => {
         tg.HapticFeedback.notificationOccurred('success');
         const q = state.quests[idx]; q.done = true;
-        state.gold += state.perks.includes('gold_boost') ? 60 : 50;
+        state.gold += state.perks.includes('boost') ? 60 : 50;
         if(state.skills[q.cat]) {
             state.skills[q.cat].xp += 25;
             if(state.skills[q.cat].xp >= 100) { state.skills[q.cat].xp = 0; state.skills[q.cat].lvl++; }
@@ -396,31 +393,30 @@
         save();
     };
 
-    window.deleteQuest = (idx) => { state.quests.splice(idx, 1); save(); };
+    window.delQuest = (idx) => { if(confirm('Удалить задачу?')) { state.quests.splice(idx, 1); save(); } };
 
     window.handleGear = (k) => {
         const it = DB.gear[k];
-        if(state.inventory.includes(k)) { state.equipped[it.slot] = state.equipped[it.slot] === k ? null : k; }
-        else if(state.gold >= it.price) { state.gold -= it.price; state.inventory.push(k); state.equipped[it.slot] = k; }
+        if(state.inventory.includes(k)) { state.equipped[it.s] = state.equipped[it.s] === k ? null : k; }
+        else if(state.gold >= it.p) { state.gold -= it.p; state.inventory.push(k); state.equipped[it.s] = k; }
         save();
     };
 
     window.buyPerk = (k) => {
-        if(state.gold >= DB.perks[k].price) { state.gold -= DB.perks[k].price; state.perks.push(k); save(); }
+        if(state.gold >= DB.perks[k].p) { state.gold -= DB.perks[k].p; state.perks.push(k); save(); }
     };
 
     window.startPiggy = () => {
-        const t = prompt('GOAL:'); const g = parseInt(prompt('AMOUNT:'));
+        const t = prompt('На что копим?'); const g = parseInt(prompt('Какая сумма нужна?'));
         if(t && g) { state.piggy = { active: true, title: t, goal: g, current: 0 }; save(); }
     };
 
     window.depositPiggy = () => {
-        const v = parseInt(prompt('AMOUNT:'));
-        if(v > 0) { 
-            state.piggy.current += v; 
-            if(v >= 100) { state.skills.money.xp += 20; if(state.skills.money.xp >= 100) { state.skills.money.xp = 0; state.skills.money.lvl++; } }
-            save(); 
-        }
+        const v = parseInt(prompt('Сколько внести?'));
+        if(v > 0 && state.gold >= v) { 
+            state.gold -= v; state.piggy.current += v; 
+            state.skills.money.xp += 10; save(); 
+        } else { alert('Недостаточно золота!'); }
     };
 
     init();
