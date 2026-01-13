@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Hero RPG: VFX & Streaks</title>
+    <title>Hero RPG: Calendar & VFX</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         :root {
@@ -21,298 +21,315 @@
         body { background: var(--bg); color: var(--text); font-family: -apple-system, sans-serif; margin: 0; padding: 16px; padding-bottom: 100px; overflow-x: hidden; }
 
         /* Анимации */
-        @keyframes shake { 0% { transform: translate(1px, 1px) rotate(0deg); } 10% { transform: translate(-1px, -2px) rotate(-1deg); } 20% { transform: translate(-3px, 0px) rotate(1deg); } 30% { transform: translate(3px, 2px) rotate(0deg); } 40% { transform: translate(1px, -1px) rotate(1deg); } 50% { transform: translate(-1px, 2px) rotate(-1deg); } 60% { transform: translate(-3px, 1px) rotate(0deg); } 70% { transform: translate(3px, 1px) rotate(-1deg); } 80% { transform: translate(-1px, -1px) rotate(1deg); } 90% { transform: translate(1px, 2px) rotate(0deg); } 100% { transform: translate(1px, -2px) rotate(-1deg); } }
-        .shake-screen { animation: shake 0.5s; }
+        @keyframes shake { 0%, 100% { transform: translate(0,0); } 25% { transform: translate(-4px, 2px); } 50% { transform: translate(4px, -2px); } 75% { transform: translate(-2px, -2px); } }
+        .shake-screen { animation: shake 0.4s ease-in-out; }
         
-        @keyframes levelup-flash { 0% { opacity: 0.6; } 100% { opacity: 0; } }
-        #flash-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: white; opacity: 0; pointer-events: none; z-index: 9999; }
-        .flash-active { animation: levelup-flash 0.5s ease-out; }
+        .particle { position: fixed; pointer-events: none; font-size: 20px; z-index: 9999; animation: fly-up 0.8s ease-out forwards; }
+        @keyframes fly-up { 0% { opacity: 1; transform: translateY(0) scale(1); } 100% { opacity: 0; transform: translateY(-80px) scale(1.5); } }
 
-        .particle { position: fixed; pointer-events: none; font-size: 20px; z-index: 9998; animation: fly-up 1s ease-out forwards; }
-        @keyframes fly-up { 0% { opacity: 1; transform: translateY(0) scale(1); } 100% { opacity: 0; transform: translateY(-100px) scale(1.5); } }
-
-        /* UI элементы */
+        /* Шапка героя */
         .hero-section { text-align: center; padding: 15px; background: rgba(255,255,255,0.05); border-radius: 20px; margin-bottom: 15px; border: 1px solid rgba(255,255,255,0.1); position: relative; }
-        .streak-badge { position: absolute; top: 10px; right: 10px; background: var(--streak); color: white; padding: 5px 10px; border-radius: 15px; font-weight: bold; font-size: 12px; box-shadow: 0 0 10px var(--streak); }
-        .hero-display { font-size: 40px; display: flex; justify-content: center; align-items: center; gap: 8px; }
+        .streak-tag { position: absolute; top: 10px; right: 10px; background: var(--streak); color: white; padding: 4px 10px; border-radius: 12px; font-weight: bold; font-size: 11px; }
+        .hero-display { font-size: 40px; display: flex; justify-content: center; align-items: center; gap: 8px; min-height: 50px; }
 
+        /* Табы */
         .tabs { display: flex; gap: 5px; margin-bottom: 15px; }
-        .tab-btn { flex: 1; padding: 10px; border-radius: 10px; background: rgba(255,255,255,0.1); color: var(--text); font-size: 11px; border: none; transition: 0.3s; }
-        .tab-btn.active { background: var(--btn); color: var(--btn-text); transform: scale(1.05); }
+        .tab-btn { flex: 1; padding: 10px 5px; border-radius: 10px; background: rgba(255,255,255,0.08); color: var(--text); font-size: 10px; border: none; font-weight: bold; text-transform: uppercase; }
+        .tab-btn.active { background: var(--btn); color: var(--btn-text); }
 
-        .card { background: rgba(255,255,255,0.08); border-radius: 16px; padding: 15px; margin-bottom: 15px; }
-        .quest { display: flex; justify-content: space-between; align-items: center; padding: 12px; background: rgba(255,255,255,0.05); border-radius: 12px; margin-bottom: 8px; border-left: 4px solid var(--btn); transition: 0.3s; }
+        /* Списки и карточки */
+        .card { background: rgba(255,255,255,0.06); border-radius: 16px; padding: 15px; margin-bottom: 10px; }
+        .quest { display: flex; justify-content: space-between; align-items: center; padding: 12px; background: rgba(255,255,255,0.04); border-radius: 12px; margin-bottom: 8px; border-left: 4px solid var(--btn); }
         .quest.boss { border-left-color: var(--boss); background: rgba(235, 77, 75, 0.1); }
-        .quest.done { opacity: 0.3; transform: scale(0.98); }
+        .quest.done { opacity: 0.3; }
 
-        .bar-bg { background: rgba(0,0,0,0.3); height: 8px; border-radius: 4px; margin-top: 4px; overflow: hidden; }
-        .bar-fill { height: 100%; transition: width 0.6s cubic-bezier(0.34, 1.56, 0.64, 1); background: var(--btn); }
-        .hp-bar-fill { background: var(--hp); }
+        /* Календарь */
+        .day-item { display: flex; justify-content: space-between; align-items: center; padding: 15px; background: rgba(255,255,255,0.05); border-radius: 14px; margin-bottom: 8px; border: 1px solid transparent; }
+        .day-item.active-day { border-color: var(--btn); background: rgba(51, 144, 236, 0.1); }
+        .day-item .badge { background: var(--btn); padding: 2px 8px; border-radius: 10px; font-size: 10px; }
 
-        .shop-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-        .item-card { background: rgba(255,255,255,0.05); padding: 10px; border-radius: 12px; text-align: center; }
-        
-        #planner-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg); z-index: 1000; display: none; padding: 20px; box-sizing: border-box; animation: slide-up 0.3s ease-out; }
-        @keyframes slide-up { from { transform: translateY(100%); } to { transform: translateY(0); } }
-        input, select { width: 100%; padding: 12px; margin-bottom: 8px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.1); background: rgba(0,0,0,0.2); color: #fff; }
+        /* Прогресс-бары */
+        .bar-bg { background: rgba(0,0,0,0.3); height: 6px; border-radius: 3px; margin-top: 5px; overflow: hidden; }
+        .bar-fill { height: 100%; transition: width 0.5s ease; background: var(--btn); }
+        .hp-fill { background: var(--hp); }
+
+        /* Кнопки */
+        .main-btn { background: var(--btn); color: var(--btn-text); border: none; padding: 14px; border-radius: 12px; width: 100%; font-weight: bold; font-size: 14px; }
+        .action-btn { background: rgba(255,255,255,0.1); border: none; padding: 6px 12px; border-radius: 8px; color: #fff; font-size: 12px; }
+
+        /* Модалка */
+        #planner-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg); z-index: 1000; display: none; padding: 20px; box-sizing: border-box; }
+        input, select { width: 100%; padding: 12px; margin-bottom: 10px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.1); background: rgba(0,0,0,0.2); color: #fff; }
+
         .hidden { display: none; }
-        .btn-complete { position: relative; overflow: hidden; }
     </style>
 </head>
 <body id="main-body">
-<div id="flash-overlay"></div>
 
 <div class="hero-section">
-    <div class="streak-badge streak-hidden" id="streak-badge">🔥 0 дней</div>
+    <div class="streak-tag" id="streak-info">🔥 0 дн.</div>
     <div class="hero-display">
         <span id="eq-head"></span><span id="hero-base">👶</span><span id="eq-weapon"></span>
     </div>
-    <div id="hero-rank" style="font-weight: bold; color: var(--gold); font-size: 14px; margin-top:5px;">Новичок</div>
+    <div id="hero-rank" style="font-size: 12px; color: var(--gold); margin: 5px 0;">Новичок</div>
     <div style="margin-top:10px">
-        <div style="display:flex; justify-content:space-between; font-size:12px; margin-bottom:2px">
-            <span>❤️ Здоровье</span><span id="hp-val">100/100</span>
-        </div>
-        <div class="bar-bg"><div id="hp-bar" class="bar-fill hp-bar-fill" style="width: 100%"></div></div>
+        <div style="display:flex; justify-content:space-between; font-size:11px"><span>❤️ HP</span><span id="hp-txt">100/100</span></div>
+        <div class="bar-bg"><div id="hp-bar" class="bar-fill hp-fill" style="width:100%"></div></div>
     </div>
-    <div style="margin-top:10px; font-weight: bold; color: var(--gold); font-size: 20px;">💰 <span id="gold-val">0</span></div>
+    <div style="margin-top:10px; font-weight: bold; color: var(--gold)">💰 <span id="gold-val">0</span></div>
 </div>
 
 <div class="tabs">
-    <button class="tab-btn active" onclick="showTab('today')">КВЕСТЫ</button>
-    <button class="tab-btn" onclick="showTab('shop')">МАГАЗИН</button>
-    <button class="tab-btn" onclick="showTab('profile')">ПРОФИЛЬ</button>
+    <button class="tab-btn active" onclick="showTab('today')">Сегодня</button>
+    <button class="tab-btn" onclick="showTab('week')">Неделя</button>
+    <button class="tab-btn" onclick="showTab('shop')">Магазин</button>
+    <button class="tab-btn" onclick="showTab('profile')">Герой</button>
 </div>
 
-<div id="tab-today">
+<div id="tab-today" class="tab-content">
     <div id="quest-list"></div>
-    <button onclick="togglePlanner(true)" style="background:var(--btn); color:white; border:none; padding:15px; border-radius:12px; width:100%; margin-top:10px; font-weight:bold; font-size: 16px;">＋ НОВЫЙ КВЕСТ</button>
+    <button class="main-btn" style="margin-top:10px" onclick="togglePlanner(true)">＋ ДОБАВИТЬ ЗАДАЧУ</button>
 </div>
 
-<div id="tab-shop" class="hidden">
-    <h3>🧪 Алхимик</h3>
-    <div class="shop-grid">
-        <div class="item-card" onclick="usePotion('hp')">
-            <span style="font-size:30px">🧪</span><br><b>Лечение (+30 HP)</b><br>
-            <span style="color:var(--gold)">150💰</span>
-        </div>
-        <div class="item-card" onclick="usePotion('xp')">
-            <span style="font-size:30px">⚡</span><br><b>Опыт (+50 XP)</b><br>
-            <span style="color:var(--gold)">500💰</span>
-        </div>
+<div id="tab-week" class="tab-content hidden">
+    <h3 style="font-size: 16px;">Календарь недели</h3>
+    <div id="calendar-view"></div>
+    <div id="day-detail" class="hidden" style="margin-top: 20px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 15px;">
+        <h4 id="selected-day-name">Задачи</h4>
+        <div id="selected-day-quests"></div>
     </div>
-    <h3 style="margin-top:20px">⚔️ Кузница</h3>
-    <div id="shop-items-list"></div>
 </div>
 
-<div id="tab-profile" class="hidden">
-    <div class="card" id="skills-box"></div>
-    <div class="card" style="font-size:12px; color:var(--hint)">
-        Выполнено квестов: <span id="stat-q">0</span><br>
-        Убито боссов: <span id="stat-b">0</span><br>
-        Макс. серия: <span id="stat-s">0</span> дней
+<div id="tab-shop" class="tab-content hidden">
+    <h3>Лавка алхимика</h3>
+    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px">
+        <div class="card" onclick="buyItem('hp')" style="text-align:center">🧪<br><small>Зелье ОЗ (+30)</small><br><b style="color:var(--gold)">150</b></div>
+        <div class="card" onclick="buyItem('xp')" style="text-align:center">⚡<br><small>Зелье ОП (+50)</small><br><b style="color:var(--gold)">500</b></div>
+    </div>
+    <h3>Кузница</h3>
+    <div id="gear-list"></div>
+</div>
+
+<div id="tab-profile" class="tab-content hidden">
+    <div class="card" id="skills-list"></div>
+    <div class="card">
+        <h4>Статистика</h4>
+        <div style="font-size:12px; color:var(--hint)">
+            Квестов пройдено: <span id="stat-q">0</span><br>
+            Боссов повержено: <span id="stat-b">0</span><br>
+            Лучшая серия: <span id="stat-s">0</span> дн.
+        </div>
     </div>
 </div>
 
 <div id="planner-modal">
-    <h2>Новая задача</h2>
-    <input type="text" id="q-title" placeholder="Что нужно сделать?">
-    <select id="q-day"><option value="0">Понедельник</option><option value="1">Вторник</option><option value="2">Среда</option><option value="3">Четверг</option><option value="4">Пятница</option><option value="5">Суббота</option><option value="6">Воскресенье</option></select>
-    <select id="q-cat"><option value="money">💰 Деньги</option><option value="education">🎓 Знания</option><option value="health">💪 Сила</option><option value="english">🇬🇧 English</option></select>
-    <div style="margin: 15px 0; display: flex; align-items: center;"><input type="checkbox" id="q-isboss" style="width:auto; margin-right: 10px;"> <label for="q-isboss" style="color:var(--boss); font-weight:bold;">👹 БОСС-КВЕСТ</label></div>
-    <button onclick="addQ()" style="background:var(--btn); color:white; border:none; padding:12px; border-radius:10px; width:100%; font-size: 16px; font-weight: bold;">Добавить</button>
-    <button onclick="togglePlanner(false)" style="background:none; color:var(--hint); border:none; width:100%; margin-top:10px">Отмена</button>
+    <h3>Новый квест</h3>
+    <input type="text" id="q-title" placeholder="Название (напр. Зал, Книга...)">
+    <select id="q-day">
+        <option value="0">Понедельник</option><option value="1">Вторник</option>
+        <option value="2">Среда</option><option value="3">Четверг</option>
+        <option value="4">Пятница</option><option value="5">Суббота</option>
+        <option value="6">Воскресенье</option>
+    </select>
+    <select id="q-cat">
+        <option value="money">💰 Деньги</option><option value="education">🎓 Знания</option>
+        <option value="health">💪 Сила</option><option value="english">🇬🇧 English</option>
+    </select>
+    <div style="margin: 15px 0"><input type="checkbox" id="q-boss"> <label for="q-boss" style="color:var(--boss)">👹 ЭТО БОСС</label></div>
+    <button class="main-btn" onclick="addQuest()">ДОБАВИТЬ В ПЛАН</button>
+    <button onclick="togglePlanner(false)" style="background:none; border:none; color:var(--hint); width:100%; margin-top:15px">Отмена</button>
 </div>
 
 <script>
     const tg = window.Telegram.WebApp;
     tg.expand();
 
+    const DAYS = ['Понедельник', 'Вторник', 'Среда', 'Четверг', 'Пятница', 'Суббота', 'Воскресенье'];
     const ITEMS = {
-        'sword': { id: 'sword', name: 'Меч', icon: '🗡️', price: 300, slot: 'weapon' },
-        'helmet': { id: 'helmet', name: 'Шлем', icon: '🪖', price: 400, slot: 'head' },
-        'shield': { id: 'shield', name: 'Щит', icon: '🛡️', price: 350, slot: 'weapon' }
+        'sword': { name: 'Меч', icon: '🗡️', price: 300, slot: 'weapon' },
+        'helmet': { name: 'Шлем', icon: '🪖', price: 400, slot: 'head' }
     };
 
-    let state = JSON.parse(localStorage.getItem('heroRPG_v7')) || {
+    let state = JSON.parse(localStorage.getItem('heroRPG_v8')) || {
         gold: 0, hp: 100,
         skills: { money: {xp:0, lvl:1}, education: {xp:0, lvl:1}, health: {xp:0, lvl:1}, english: {xp:0, lvl:1} },
         quests: [], inventory: [], equipped: { head: null, weapon: null },
-        history: { totalCompleted: 0, bossesDefeated: 0, maxStreak: 0 },
-        streak: { count: 0, lastDateChecked: null },
-        lastDate: new Date().toDateString()
+        streak: 0, lastCheck: null,
+        stats: { q: 0, b: 0, s: 0 }
     };
 
-    // --- VFX Функции ---
-    function triggerFlash() {
-        const flash = document.getElementById('flash-overlay');
-        flash.classList.remove('flash-active');
-        void flash.offsetWidth; // Триггер рефлоу для перезапуска анимации
-        flash.classList.add('flash-active');
+    function save() {
+        localStorage.setItem('heroRPG_v8', JSON.stringify(state));
+        render();
     }
 
-    function triggerShake() {
-        document.getElementById('main-body').classList.add('shake-screen');
-        setTimeout(() => document.getElementById('main-body').classList.remove('shake-screen'), 500);
-    }
-
-    function spawnParticles(x, y, emoji) {
-        for(let i=0; i<5; i++) {
+    // VFX
+    function spawnParticles(x, y) {
+        for(let i=0; i<6; i++) {
             const p = document.createElement('div');
-            p.className = 'particle';
-            p.innerText = emoji;
+            p.className = 'particle'; p.innerText = '💰';
             p.style.left = (x + (Math.random()-0.5)*40) + 'px';
             p.style.top = y + 'px';
             document.body.appendChild(p);
-            setTimeout(() => p.remove(), 1000);
+            setTimeout(() => p.remove(), 800);
         }
     }
 
-    // --- Логика ---
-    function dailyRoutineCheck() {
+    function shake() {
+        document.getElementById('main-body').classList.add('shake-screen');
+        setTimeout(() => document.getElementById('main-body').classList.remove('shake-screen'), 400);
+    }
+
+    // Логика дней и серий
+    function dailyCheck() {
         const todayStr = new Date().toDateString();
-        
-        // 1. Проверка серии и урона (если наступил новый день)
-        if (state.lastDate !== todayStr) {
+        if (state.lastCheck !== todayStr) {
             const yesterdayDate = new Date();
             yesterdayDate.setDate(yesterdayDate.getDate() - 1);
-            const yesterdayIdx = (yesterdayDate.getDay() + 6) % 7;
+            const yIdx = (yesterdayDate.getDay() + 6) % 7;
 
-            const yesterdayQuests = state.quests.filter(q => parseInt(q.day) === yesterdayIdx);
-            const failed = yesterdayQuests.filter(q => !q.done);
-
-            if (yesterdayQuests.length > 0) {
-                if (failed.length === 0) {
-                    state.streak.count++;
-                    if(state.streak.count > state.history.maxStreak) state.history.maxStreak = state.streak.count;
-                    alert(`🔥 Серия продлена! Теперь ${state.streak.count} дн. Бонус к золоту увеличен!`);
+            const yQuests = state.quests.filter(q => parseInt(q.day) === yIdx);
+            if (yQuests.length > 0) {
+                const failed = yQuests.filter(q => !q.done).length;
+                if (failed === 0) {
+                    state.streak++;
+                    if (state.streak > state.stats.s) state.stats.s = state.streak;
                 } else {
-                    state.streak.count = 0;
-                    const damage = failed.length * 10;
-                    state.hp -= damage;
-                    triggerShake();
-                    alert(`Серия прервана! 😢 Ты пропустил задачи и получил ${damage} урона.`);
+                    state.streak = 0;
+                    state.hp -= (failed * 10);
+                    shake();
                 }
             }
-
-            state.lastDate = todayStr;
+            state.lastCheck = todayStr;
             save();
         }
     }
 
-    function save() {
-        if (state.hp <= 0) {
-            state.hp = 50;
-            state.gold = Math.floor(state.gold * 0.8);
-            state.streak.count = 0;
-            alert("☠️ Герой пал! Золото потеряно, серия сброшена. Восстановлено 50 HP.");
-        }
-        localStorage.setItem('heroRPG_v7', JSON.stringify(state));
-        render();
-    }
-
     function render() {
+        // Базовые данные
         document.getElementById('gold-val').innerText = state.gold;
-        document.getElementById('hp-val').innerText = `${state.hp}/100`;
+        document.getElementById('hp-txt').innerText = `${Math.max(0, state.hp)}/100`;
         document.getElementById('hp-bar').style.width = `${Math.max(0, state.hp)}%`;
-        
-        const streak Badge = document.getElementById('streak-badge');
-        if(state.streak.count > 0) {
-            streakBadge.innerText = `🔥 ${state.streak.count} дн. (+${state.streak.count*5}💰)`;
-            streakBadge.style.display = 'block';
-        } else {
-            streakBadge.style.display = 'none';
-        }
+        document.getElementById('streak-info').innerText = `🔥 ${state.streak} дн.`;
 
+        // Герой
         let totalLvl = 0; for(let s in state.skills) totalLvl += state.skills[s].lvl;
-        const base = document.getElementById('hero-base');
-        if(totalLvl <= 5) base.innerText = "👶"; else if(totalLvl <= 15) base.innerText = "🏹"; else base.innerText = "⚔️";
+        document.getElementById('hero-base').innerText = totalLvl > 15 ? "⚔️" : (totalLvl > 5 ? "🏹" : "👶");
+        document.getElementById('eq-head').innerText = state.equipped.head ? ITEMS[state.equipped.head].icon : '';
+        document.getElementById('eq-weapon').innerText = state.equipped.weapon ? ITEMS[state.equipped.weapon].icon : '';
 
-        const todayIdx = (new Date().getDay() + 6) % 7;
-        const todayQuests = state.quests.filter(q => parseInt(q.day) === todayIdx);
-        document.getElementById('quest-list').innerHTML = todayQuests.map((q, i) => {
+        // Сегодняшние задачи
+        const tIdx = (new Date().getDay() + 6) % 7;
+        const tQuests = state.quests.filter(q => parseInt(q.day) === tIdx);
+        document.getElementById('quest-list').innerHTML = tQuests.length ? tQuests.map(q => {
             const gIdx = state.quests.indexOf(q);
-            const streakBonus = state.streak.count * 5;
-            const reward = (q.isBoss ? 150 : 50) + streakBonus;
-            return `<div class="quest ${q.isBoss?'boss':''} ${q.done?'done':''}">
+            return `
+            <div class="quest ${q.isBoss?'boss':''} ${q.done?'done':''}">
                 <span>${q.isBoss?'👹 ':''}${q.title}</span>
-                ${q.done ? '✅' : `<button class="btn-complete" onclick="complete(event, ${gIdx})" style="padding:8px 12px; font-weight:bold;">+${reward}💰</button>`}
+                ${q.done ? '✅' : `<button class="action-btn" onclick="completeQuest(event, ${gIdx})">+${q.isBoss?150:50}</button>`}
             </div>`;
-        }).join('') || '<div style="text-align:center; padding:30px; color:var(--hint); font-size: 18px;">На сегодня всё чисто! 🎉</div>';
+        }).join('') : '<p style="text-align:center; color:var(--hint)">На сегодня задач нет</p>';
 
+        // Календарь
+        document.getElementById('calendar-view').innerHTML = DAYS.map((d, i) => {
+            const count = state.quests.filter(q => parseInt(q.day) === i && !q.done).length;
+            return `<div class="day-item ${i===tIdx?'active-day':''}" onclick="viewDay(${i})">
+                <span>${d}</span>
+                ${count > 0 ? `<span class="badge">${count}</span>` : '✅'}
+            </div>`;
+        }).join('');
+
+        // Профиль и навыки
         const sNames = {money:'Деньги', education:'Знания', health:'Сила', english:'English'};
-        document.getElementById('skills-box').innerHTML = Object.keys(state.skills).map(k => `
+        document.getElementById('skills-list').innerHTML = Object.keys(state.skills).map(k => `
             <div style="margin-bottom:10px">
-                <div style="display:flex;justify-content:space-between;font-size:13px; margin-bottom: 3px;"><span>${sNames[k]} (Lvl ${state.skills[k].lvl})</span><span>${state.skills[k].xp}/100</span></div>
+                <div style="display:flex; justify-content:space-between; font-size:12px"><span>${sNames[k]} Lvl ${state.skills[k].lvl}</span><span>${state.skills[k].xp}%</span></div>
                 <div class="bar-bg"><div class="bar-fill" style="width:${state.skills[k].xp}%"></div></div>
             </div>`).join('');
+        
+        document.getElementById('stat-q').innerText = state.stats.q;
+        document.getElementById('stat-b').innerText = state.stats.b;
+        document.getElementById('stat-s').innerText = state.stats.s;
 
-        document.getElementById('stat-q').innerText = state.history.totalCompleted;
-        document.getElementById('stat-b').innerText = state.history.bossesDefeated;
-        document.getElementById('stat-s').innerText = state.history.maxStreak;
+        // Магазин (снаряжение)
+        document.getElementById('gear-list').innerHTML = Object.keys(ITEMS).map(k => `
+            <div class="day-item">
+                <span>${ITEMS[k].icon} ${ITEMS[k].name}</span>
+                <button class="action-btn" onclick="buyGear('${k}')">${state.inventory.includes(k)?'Надеть':ITEMS[k].price+'💰'}</button>
+            </div>`).join('');
     }
 
-    window.complete = function(event, idx) {
+    window.completeQuest = function(e, idx) {
         const q = state.quests[idx];
         if(q.done) return;
-        
-        // VFX: Частицы
-        const rect = event.target.getBoundingClientRect();
-        spawnParticles(rect.left + rect.width/2, rect.top, '💰');
-
+        spawnParticles(e.clientX, e.clientY);
         q.done = true;
-        const streakBonus = state.streak.count * 5;
-        state.gold += (q.isBoss ? 150 : 50) + streakBonus;
-        
-        state.history.totalCompleted++;
-        if(q.isBoss) state.history.bossesDefeated++;
+        const bonus = state.streak * 5;
+        state.gold += (q.isBoss ? 150 : 50) + bonus;
+        state.stats.q++;
+        if(q.isBoss) state.stats.b++;
         
         const s = state.skills[q.cat];
         s.xp += (q.isBoss ? 50 : 25);
-        if(s.xp >= 100) { 
-            s.xp = 0; 
-            s.lvl++; 
-            triggerFlash(); // VFX: Вспышка уровня
-            tg.HapticFeedback.notificationOccurred('success');
-        }
+        if(s.xp >= 100) { s.xp = 0; s.lvl++; tg.HapticFeedback.notificationOccurred('success'); }
         tg.HapticFeedback.impactOccurred('medium');
         save();
     };
 
-    window.usePotion = function(type) {
-        if(type === 'hp' && state.gold >= 150) {
-            state.gold -= 150;
-            state.hp = Math.min(100, state.hp + 30);
-            spawnParticles(window.innerWidth/2, window.innerHeight/2, '❤️');
-            tg.HapticFeedback.notificationOccurred('success');
-        } else if(type === 'xp' && state.gold >= 500) {
-            const cat = prompt("Категория (money, education, health, english):", "money");
-            if(state.skills[cat] && cat) {
-                state.gold -= 500;
-                state.skills[cat].xp += 50;
-                spawnParticles(window.innerWidth/2, window.innerHeight/2, '⚡');
-                if(state.skills[cat].xp >= 100) { state.skills[cat].xp = 0; state.skills[cat].lvl++; triggerFlash(); }
-            }
-        } else { alert("Недостаточно золота или отмена!"); }
-        save();
+    window.viewDay = function(idx) {
+        const dQuests = state.quests.filter(q => parseInt(q.day) === idx);
+        document.getElementById('day-detail').classList.remove('hidden');
+        document.getElementById('selected-day-name').innerText = `Задачи на ${DAYS[idx]}`;
+        document.getElementById('selected-day-quests').innerHTML = dQuests.length ? dQuests.map(q => `
+            <div class="quest ${q.done?'done':''}"><span>${q.title}</span><span>${q.done?'✅':'⏳'}</span></div>
+        `).join('') : '<p style="font-size:12px; color:var(--hint)">Задач не запланировано</p>';
     };
 
     window.showTab = function(t) {
-        ['today', 'shop', 'profile'].forEach(id => document.getElementById('tab-'+id).classList.add('hidden'));
-        document.getElementById('tab-'+t).classList.remove('hidden');
+        document.querySelectorAll('.tab-content').forEach(c => c.classList.add('hidden'));
         document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-        event.target.classList.add('active');
+        document.getElementById('tab-'+t).classList.remove('hidden');
+        event.currentTarget.classList.add('active');
     };
 
-    function togglePlanner(s) { document.getElementById('planner-modal').style.display = s?'block':'none'; }
-    window.addQ = function() {
-        const t = document.getElementById('q-title').value;
-        if(!t) return;
-        state.quests.push({ title: t, day: document.getElementById('q-day').value, cat: document.getElementById('q-cat').value, isBoss: document.getElementById('q-isboss').checked, done: false });
+    window.togglePlanner = (s) => document.getElementById('planner-modal').style.display = s?'block':'none';
+
+    window.addQuest = function() {
+        const title = document.getElementById('q-title').value;
+        if(!title) return;
+        state.quests.push({
+            title, 
+            day: document.getElementById('q-day').value,
+            cat: document.getElementById('q-cat').value,
+            isBoss: document.getElementById('q-boss').checked,
+            done: false
+        });
+        document.getElementById('q-title').value = '';
         togglePlanner(false);
         save();
-    }
+    };
 
-    dailyRoutineCheck();
+    window.buyItem = function(type) {
+        if(type === 'hp' && state.gold >= 150) {
+            state.gold -= 150; state.hp = Math.min(100, state.hp + 30);
+        } else if(type === 'xp' && state.gold >= 500) {
+            const c = prompt("Куда дать опыт? (money, education, health, english)", "money");
+            if(state.skills[c]) { state.gold -= 500; state.skills[c].xp += 50; if(state.skills[c].xp>=100){state.skills[c].xp=0; state.skills[c].lvl++;} }
+        } else alert("Не хватает золота!");
+        save();
+    };
+
+    window.buyGear = function(id) {
+        if(state.inventory.includes(id)) {
+            const slot = ITEMS[id].slot;
+            state.equipped[slot] = state.equipped[slot] === id ? null : id;
+        } else if(state.gold >= ITEMS[id].price) {
+            state.gold -= ITEMS[id].price; state.inventory.push(id);
+        } else alert("Нужно больше золота!");
+        save();
+    };
+
+    dailyCheck();
     render();
 </script>
 </body>
