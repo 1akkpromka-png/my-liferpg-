@@ -23,7 +23,7 @@
             background-image: 
                 linear-gradient(rgba(0, 255, 255, 0.05) 1px, transparent 1px),
                 linear-gradient(90deg, rgba(0, 255, 255, 0.05) 1px, transparent 1px);
-            background-size: 30px 30px; /* Сетка на фоне */
+            background-size: 30px 30px;
             color: #e0e0e0;
             font-family: 'Courier New', Courier, monospace;
             margin: 0; padding: 16px; padding-bottom: 120px;
@@ -50,7 +50,7 @@
         .aura-wrapper {
             width: 130px; height: 130px; margin: 0 auto;
             border-radius: 50%; display: flex; align-items: center; justify-content: center;
-            position: relative; transition: all 0.5s;
+            position: relative; transition: all 0.5s; border: 1px solid transparent;
         }
         
         .aura-scan {
@@ -64,63 +64,46 @@
             100% { transform: scale(1); opacity: 0.8; }
         }
 
-        .hero-avatar { font-size: 50px; display: flex; align-items: center; z-index: 5; }
-        #vis-head { position: absolute; top: 15px; font-size: 35px; }
-        #vis-weap { position: absolute; right: 5px; font-size: 35px; transform: scaleX(-1); }
+        .hero-avatar { font-size: 50px; display: flex; align-items: center; z-index: 5; position: relative; }
+        #vis-head { position: absolute; top: -25px; left: 50%; transform: translateX(-50%); font-size: 35px; z-index: 6; }
+        #vis-weap { position: absolute; right: -25px; font-size: 35px; transform: scaleX(-1); z-index: 6; }
 
-        /* --- БАРЫ ПРОГРЕССА --- */
         .cyber-bar-container {
             height: 12px; background: #111; border: 1px solid #333;
-            margin: 10px 0; position: relative;
+            margin: 10px 0; position: relative; overflow: hidden;
         }
-        .cyber-bar-fill {
-            height: 100%; transition: width 0.6s cubic-bezier(0.1, 0.7, 1.0, 0.1);
-            position: relative;
-        }
-        .glitch-effect {
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
-            animation: bar-glitch 2s infinite;
-        }
-        @keyframes bar-glitch { 0% { left: -100%; } 100% { left: 100%; } }
+        .cyber-bar-fill { height: 100%; transition: width 0.6s ease; position: relative; }
 
         /* --- ТАБЫ --- */
-        .tabs { display: flex; gap: 5px; margin-bottom: 20px; overflow-x: auto; padding-bottom: 5px; }
+        .tabs { display: flex; gap: 5px; margin-bottom: 20px; overflow-x: auto; }
         .tab-btn {
             background: transparent; border: 1px solid var(--neon-blue);
             color: var(--neon-blue); padding: 10px 15px; font-weight: bold;
-            font-family: inherit; cursor: pointer; text-transform: uppercase;
-            font-size: 11px; clip-path: polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px);
+            font-family: inherit; font-size: 11px; text-transform: uppercase;
         }
         .tab-btn.active { background: var(--neon-blue); color: #000; box-shadow: 0 0 15px var(--neon-blue); }
 
-        /* --- СПИСОК ЗАДАЧ --- */
         .quest-box {
             background: rgba(0, 255, 255, 0.03); border: 1px solid rgba(0, 255, 255, 0.1);
             padding: 15px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center;
         }
-        .quest-box.done { opacity: 0.3; border-color: #333; text-decoration: line-through; }
+        .quest-box.done { opacity: 0.3; border-color: #333; }
 
-        /* --- КНОПКИ --- */
         .btn-cyber {
             width: 100%; padding: 15px; background: transparent; 
             border: 2px solid var(--neon-pink); color: var(--neon-pink);
             font-weight: bold; font-family: inherit; text-transform: uppercase;
-            box-shadow: 0 0 10px rgba(255, 0, 255, 0.2); margin-top: 10px;
+            margin-top: 10px;
         }
-        .btn-cyber:active { background: var(--neon-pink); color: #000; }
 
-        /* --- МОДАЛКА --- */
         #modal-overlay {
             position: fixed; inset: 0; background: rgba(0,0,0,0.95);
-            z-index: 9999; display: none; padding: 25px;
-            border: 2px solid var(--neon-blue); margin: 10px;
+            z-index: 9999; display: none; padding: 25px; border: 2px solid var(--neon-blue);
         }
         input, select {
             width: 100%; background: #111; border: 1px solid var(--neon-blue);
             padding: 12px; color: var(--neon-blue); margin-bottom: 15px; font-family: inherit;
         }
-
         .hidden { display: none !important; }
 
         /* Loader */
@@ -133,15 +116,15 @@
 <body>
 
 <div id="loader">
-    <div style="color: var(--neon-blue); font-size: 20px; margin-bottom: 10px;">> LOADING_CORE...</div>
-    <div id="load-bar-wrap" style="width: 200px; height: 4px; background: #222;">
-        <div id="load-bar" style="width: 0%; height: 100%; background: var(--neon-blue);"></div>
+    <div style="color: var(--neon-blue); font-size: 18px; margin-bottom: 10px;">> CONNECTING_TO_GRID...</div>
+    <div style="width: 200px; height: 2px; background: #222;">
+        <div id="load-bar" style="width: 0%; height: 100%; background: var(--neon-blue); transition: width 0.3s;"></div>
     </div>
 </div>
 
 <div class="cyber-card">
     <div style="display: flex; justify-content: space-between; font-size: 10px; margin-bottom: 10px;">
-        <span id="rank-txt">ID: NOVICE_PLAYER</span>
+        <span id="rank-txt">USER_ID: UNKNOWN</span>
         <span id="total-lvl">LVL: 01</span>
     </div>
 
@@ -158,11 +141,8 @@
         <span style="color: var(--hp-red);">HP: <span id="hp-val">100</span></span>
         <span style="color: var(--neon-yellow);">CREDITS: <span id="gold-val">0</span></span>
     </div>
-    
     <div class="cyber-bar-container">
-        <div id="hp-bar" class="cyber-bar-fill" style="background: var(--hp-red); width: 100%;">
-            <div class="glitch-effect"></div>
-        </div>
+        <div id="hp-bar" class="cyber-bar-fill" style="background: var(--hp-red); width: 100%;"></div>
     </div>
 </div>
 
@@ -189,21 +169,16 @@
 
 <div id="tab-piggy" class="hidden">
     <div class="cyber-card" style="border-color: var(--neon-yellow);">
-        <div style="color: var(--neon-yellow); margin-bottom: 15px;">> FINANCIAL_NODE</div>
         <div id="piggy-content"></div>
     </div>
 </div>
 
 <div id="tab-hero" class="hidden">
     <div id="skills-list"></div>
-    <div class="cyber-card" style="margin-top: 10px;">
-        <div style="color: var(--neon-blue); font-size: 11px; margin-bottom: 10px;">> WEEK_SCHEDULE</div>
-        <div id="calendar-content"></div>
-    </div>
 </div>
 
 <div id="modal-overlay">
-    <h3 style="color: var(--neon-blue); margin-top: 0;">NEW_DATA_ENTRY</h3>
+    <h3 style="color: var(--neon-blue);">NEW_DATA_ENTRY</h3>
     <input type="text" id="inp-title" placeholder="QUEST_NAME">
     <div style="display: flex; gap: 10px;">
         <input type="time" id="inp-start">
@@ -214,23 +189,22 @@
         <option value="2">WEDNESDAY</option><option value="3">THURSDAY</option>
         <option value="4">FRIDAY</option><option value="5">SATURDAY</option><option value="6">SUNDAY</option>
     </select>
-    <select id="inp-cat" onchange="checkCustomCat(this.value)">
+    <select id="inp-cat" onchange="document.getElementById('inp-custom').classList.toggle('hidden', this.value !== 'new_cat')">
         <option value="money">MONEY_NODE</option>
         <option value="education">INTEL_NODE</option>
         <option value="health">BIO_NODE</option>
         <option value="new_cat">++ ADD_NEW_NODE</option>
     </select>
     <input type="text" id="inp-custom" class="hidden" placeholder="NODE_ID_NAME">
-    
     <button class="btn-cyber" style="border-color: var(--neon-blue); color: var(--neon-blue);" onclick="saveQuest()">UPLOAD</button>
     <button onclick="closeModal()" style="width: 100%; background: none; border: none; color: #555; margin-top: 15px;">ABORT</button>
 </div>
 
 <script>
     const tg = window.Telegram.WebApp;
+    tg.ready();
     tg.expand();
 
-    // КОНСТАНТЫ БД
     const DB = {
         gear: {
             'h1': { name: 'CYBER_HELM', icon: '🪖', price: 500, slot: 'head' },
@@ -244,7 +218,6 @@
         }
     };
 
-    // СОСТОЯНИЕ
     let state = {
         gold: 0, hp: 100, lastLogin: new Date().toDateString(),
         skills: { money: {lvl:1, xp:0}, education: {lvl:1, xp:0}, health: {lvl:1, xp:0} },
@@ -253,167 +226,143 @@
         piggy: { active: false, title: '', goal: 0, current: 0 }
     };
 
-    // --- СИСТЕМА СОХРАНЕНИЯ (CLOUD + LOCAL) ---
+    let isLoaded = false;
+
+    // --- ИСПРАВЛЕННАЯ ИНИЦИАЛИЗАЦИЯ ---
     function init() {
-        // Симуляция загрузки
-        let progress = 0;
+        // Таймер для визуального прогресса загрузки
+        let p = 0;
+        const bar = document.getElementById('load-bar');
         const interval = setInterval(() => {
-            progress += 10;
-            document.getElementById('load-bar').style.width = progress + '%';
-            if(progress >= 100) clearInterval(interval);
+            p += 5; bar.style.width = p + '%';
+            if(p >= 90) clearInterval(interval);
         }, 50);
 
-        tg.CloudStorage.getItem('cyber_rpg_save', (err, value) => {
-            if(!err && value) {
-                state = JSON.parse(value);
-            } else {
-                const local = localStorage.getItem('cyber_rpg_save');
-                if(local) state = JSON.parse(local);
+        // Предохранитель: если облако не ответит за 2 сек, идем дальше
+        const cloudTimeout = setTimeout(() => {
+            if(!isLoaded) finalizeInit("TIMEOUT_FALLBACK");
+        }, 2000);
+
+        tg.CloudStorage.getItem('cyber_save_v23', (err, value) => {
+            clearTimeout(cloudTimeout);
+            if(!isLoaded) {
+                if(!err && value) {
+                    try { state = JSON.parse(value); } catch(e) {}
+                } else {
+                    const local = localStorage.getItem('cyber_save_v23');
+                    if(local) try { state = JSON.parse(local); } catch(e) {}
+                }
+                finalizeInit("CLOUD_SUCCESS");
             }
-            
-            checkDailyPenalty();
-            render();
-            
-            setTimeout(() => {
-                document.getElementById('loader').style.display = 'none';
-            }, 800);
         });
+    }
+
+    function finalizeInit(reason) {
+        isLoaded = true;
+        console.log("Init finished via:", reason);
+        document.getElementById('load-bar').style.width = '100%';
+        checkDailyPenalty();
+        render();
+        setTimeout(() => {
+            document.getElementById('loader').style.display = 'none';
+        }, 500);
     }
 
     function save() {
         const data = JSON.stringify(state);
-        localStorage.setItem('cyber_rpg_save', data);
-        tg.CloudStorage.setItem('cyber_rpg_save', data);
+        localStorage.setItem('cyber_save_v23', data);
+        tg.CloudStorage.setItem('cyber_save_v23', data);
         render();
     }
 
-    // --- ЛОГИКА ---
     function checkDailyPenalty() {
         const today = new Date().toDateString();
         if(state.lastLogin !== today) {
             const yesterday = (new Date().getDay() + 5) % 7;
             const missed = state.quests.filter(q => parseInt(q.day) === yesterday && !q.done);
-            
             if(missed.length > 0) {
                 let dmg = missed.length * 15;
                 if(state.perks.includes('def')) dmg = Math.floor(dmg/2);
                 state.hp = Math.max(0, state.hp - dmg);
-                tg.showAlert(`SYSTEM_NOTICE: Yesterday you missed ${missed.length} tasks. HP reduced by ${dmg}.`);
             }
             state.lastLogin = today;
             save();
         }
     }
 
-    // --- РЕНДЕРИНГ ---
     function render() {
-        // Основные статы
         document.getElementById('gold-val').innerText = state.gold;
         document.getElementById('hp-val').innerText = state.hp;
         document.getElementById('hp-bar').style.width = state.hp + '%';
 
-        // Уровень и Ранг
         let totalLvl = 0;
         for(let s in state.skills) totalLvl += state.skills[s].lvl;
         document.getElementById('total-lvl').innerText = 'LVL: ' + (totalLvl < 10 ? '0'+totalLvl : totalLvl);
+        
+        // Ранг
+        let r = "NOVICE_USER";
+        if(totalLvl > 10) r = "SYSTEM_ADMIN";
+        if(totalLvl > 30) r = "NET_RUNNER";
+        document.getElementById('rank-txt').innerText = "ID: " + r;
 
-        const aura = document.getElementById('aura');
-        if(totalLvl > 15) aura.style.borderColor = 'var(--neon-pink)';
-        if(totalLvl > 30) aura.style.borderColor = 'var(--neon-yellow)';
-
-        // Визуал героя
         document.getElementById('vis-head').innerText = state.equipped.head ? DB.gear[state.equipped.head].icon : '';
         document.getElementById('vis-weap').innerText = state.equipped.weapon ? DB.gear[state.equipped.weapon].icon : '';
 
-        // Список задач (сегодняшние)
         const today = (new Date().getDay() + 6) % 7;
         const dailyQuests = state.quests.filter(q => parseInt(q.day) === today);
-        
         document.getElementById('quest-list').innerHTML = dailyQuests.map((q, i) => {
-            const globalIdx = state.quests.indexOf(q);
+            const gIdx = state.quests.indexOf(q);
             return `
                 <div class="quest-box ${q.done ? 'done' : ''}">
-                    <div>
-                        <div style="font-size:9px; color:var(--neon-blue)">[${q.cat.toUpperCase()}] ${q.start || ''}</div>
-                        <div style="font-weight:bold">${q.title}</div>
-                    </div>
-                    ${q.done ? 
-                        `<button onclick="deleteQuest(${globalIdx})" style="background:none; border:none; color:var(--hp-red)">[DEL]</button>` : 
-                        `<button onclick="completeQuest(event, ${globalIdx})" style="background:var(--neon-blue); border:none; color:#000; padding:5px 10px; font-weight:bold">OK</button>`
-                    }
-                </div>
-            `;
-        }).join('') || '<div style="text-align:center; opacity:0.3; padding:20px;">NO_ACTIVE_QUESTS</div>';
+                    <div><div style="font-size:9px; color:var(--neon-blue)">[${q.cat.toUpperCase()}]</div><b>${q.title}</b></div>
+                    ${q.done ? `<button onclick="deleteQuest(${gIdx})" style="background:none; border:none; color:var(--hp-red)">[DEL]</button>` : 
+                    `<button onclick="completeQuest(${gIdx})" style="background:var(--neon-blue); border:none; padding:5px 10px; font-weight:bold">OK</button>`}
+                </div>`;
+        }).join('') || '<div style="opacity:0.3; padding:20px;">NO_DATA_NODES</div>';
 
-        // Магазин
         renderShop();
-        
-        // Копилка
         renderPiggy();
 
-        // Профиль (Навыки)
         document.getElementById('skills-list').innerHTML = Object.keys(state.skills).map(k => `
             <div class="cyber-card">
-                <div style="display:flex; justify-content:space-between; font-size:11px; margin-bottom:5px;">
-                    <span>${k.toUpperCase()} [LVL ${state.skills[k].lvl}]</span>
-                    <span>${state.skills[k].xp}%</span>
-                </div>
-                <div class="cyber-bar-container">
-                    <div class="cyber-bar-fill" style="width:${state.skills[k].xp}%; background:var(--neon-blue)"></div>
-                </div>
-            </div>
-        `).join('');
+                <div style="display:flex; justify-content:space-between; font-size:10px; margin-bottom:5px;"><span>${k.toUpperCase()}</span><span>LVL ${state.skills[k].lvl}</span></div>
+                <div class="cyber-bar-container"><div class="cyber-bar-fill" style="width:${state.skills[k].xp}%; background:var(--neon-blue)"></div></div>
+            </div>`).join('');
     }
 
     function renderShop() {
-        const gearHTML = Object.keys(DB.gear).map(k => {
-            const item = DB.gear[k];
-            const owned = state.inventory.includes(k);
-            const equipped = state.equipped[item.slot] === k;
-            return `
-                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
-                    <span>${item.icon} ${item.name}</span>
-                    <button onclick="handleGear('${k}')" style="background:${owned ? (equipped ? 'var(--hp-red)' : 'var(--neon-blue)') : 'var(--neon-yellow)'}; border:none; padding:5px 10px; font-weight:bold; font-size:10px;">
-                        ${owned ? (equipped ? 'REMOVE' : 'EQUIP') : item.price}
-                    </button>
-                </div>
-            `;
-        }).join('');
+        let gearHTML = "";
+        for(let k in DB.gear) {
+            const it = DB.gear[k]; const has = state.inventory.includes(k); const eq = state.equipped[it.slot] === k;
+            gearHTML += `<div style="display:flex; justify-content:space-between; margin-bottom:10px;">
+                <span>${it.icon} ${it.name}</span>
+                <button onclick="handleGear('${k}')" style="background:${has?(eq?'var(--hp-red)':'var(--neon-blue)'):'var(--neon-yellow)'}; border:none; padding:5px; font-size:10px; font-weight:bold;">
+                ${has?(eq?'OFF':'ON'):it.price}</button></div>`;
+        }
         document.getElementById('shop-gear-list').innerHTML = gearHTML;
 
-        const perkHTML = Object.keys(DB.perks).map(k => {
-            const p = DB.perks[k];
-            const has = state.perks.includes(k);
-            return `
-                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
-                    <div><div style="font-weight:bold; font-size:12px;">${p.name}</div><div style="font-size:9px; opacity:0.6">${p.desc}</div></div>
-                    <button onclick="buyPerk('${k}')" ${has ? 'disabled' : ''} style="background:${has ? '#333' : 'var(--neon-pink)'}; border:none; color:#000; padding:5px 10px; font-weight:bold;">
-                        ${has ? 'OWNED' : p.price}
-                    </button>
-                </div>
-            `;
-        }).join('');
+        let perkHTML = "";
+        for(let k in DB.perks) {
+            const p = DB.perks[k]; const has = state.perks.includes(k);
+            perkHTML += `<div style="display:flex; justify-content:space-between; margin-bottom:10px;">
+                <span>${p.name}</span>
+                <button onclick="buyPerk('${k}')" ${has?'disabled':''} style="background:${has?'#333':'var(--neon-pink)'}; border:none; font-size:10px; font-weight:bold;">
+                ${has?'OWNED':p.price}</button></div>`;
+        }
         document.getElementById('shop-perks-list').innerHTML = perkHTML;
     }
 
     function renderPiggy() {
-        const p = state.piggy;
-        const box = document.getElementById('piggy-content');
+        const p = state.piggy; const box = document.getElementById('piggy-content');
         if(!p.active) {
-            box.innerHTML = `<button class="btn-cyber" style="border-color:var(--neon-yellow); color:var(--neon-yellow)" onclick="startPiggy()">INIT_VAULT_GOAL</button>`;
+            box.innerHTML = `<button class="btn-cyber" onclick="startPiggy()">INIT_VAULT</button>`;
         } else {
-            const pct = Math.min(100, (p.current / p.goal) * 100);
-            box.innerHTML = `
-                <div style="font-weight:bold; margin-bottom:5px;">${p.title.toUpperCase()}</div>
-                <div style="font-size:11px; margin-bottom:10px;">PROGRESS: ${p.current} / ${p.goal}</div>
-                <div class="cyber-bar-container"><div class="cyber-bar-fill" style="width:${pct}%; background:var(--neon-yellow)"></div></div>
-                <button class="btn-cyber" style="border-color:var(--neon-yellow); color:var(--neon-yellow)" onclick="depositPiggy()">+ DEPOSIT</button>
-                <button onclick="resetPiggy()" style="background:none; border:none; color:#444; width:100%; margin-top:10px; font-size:10px;">TERMINATE_GOAL</button>
-            `;
+            box.innerHTML = `<b>${p.title}</b><br><small>${p.current}/${p.goal}</small>
+            <button class="btn-cyber" onclick="depositPiggy()">+ DEPOSIT</button>
+            <button onclick="state.piggy.active=false; save();" style="background:none; border:none; color:#555; font-size:9px;">RESET</button>`;
         }
     }
 
-    // --- ДЕЙСТВИЯ ---
     window.switchTab = (e, name) => {
         tg.HapticFeedback.impactOccurred('light');
         document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
@@ -422,117 +371,59 @@
         document.getElementById('tab-'+name).classList.remove('hidden');
     };
 
-    window.openModal = () => {
-        document.getElementById('modal-overlay').style.display = 'block';
-    };
-
-    window.closeModal = () => {
-        document.getElementById('modal-overlay').style.display = 'none';
-    };
-
-    window.checkCustomCat = (val) => {
-        document.getElementById('inp-custom').classList.toggle('hidden', val !== 'new_cat');
-    };
+    window.openModal = () => document.getElementById('modal-overlay').style.display = 'block';
+    window.closeModal = () => document.getElementById('modal-overlay').style.display = 'none';
 
     window.saveQuest = () => {
-        const title = document.getElementById('inp-title').value;
-        if(!title) return;
+        const title = document.getElementById('inp-title').value; if(!title) return;
         let cat = document.getElementById('inp-cat').value;
         if(cat === 'new_cat') {
             cat = document.getElementById('inp-custom').value || 'misc';
             if(!state.skills[cat]) state.skills[cat] = {lvl:1, xp:0};
         }
-        
-        state.quests.push({
-            title, cat,
-            day: document.getElementById('inp-day').value,
-            start: document.getElementById('inp-start').value,
-            end: document.getElementById('inp-end').value,
-            done: false
-        });
-        closeModal();
-        save();
+        state.quests.push({ title, cat, day: document.getElementById('inp-day').value, start: document.getElementById('inp-start').value, done: false });
+        closeModal(); save();
     };
 
-    window.completeQuest = (e, idx) => {
+    window.completeQuest = (idx) => {
         tg.HapticFeedback.notificationOccurred('success');
-        const q = state.quests[idx];
-        q.done = true;
-        
-        let reward = 50;
-        if(state.perks.includes('gold_boost')) reward = 60;
-        state.gold += reward;
-
+        const q = state.quests[idx]; q.done = true;
+        state.gold += state.perks.includes('gold_boost') ? 60 : 50;
         if(state.skills[q.cat]) {
             state.skills[q.cat].xp += 25;
-            if(state.skills[q.cat].xp >= 100) {
-                state.skills[q.cat].xp = 0;
-                state.skills[q.cat].lvl++;
-            }
+            if(state.skills[q.cat].xp >= 100) { state.skills[q.cat].xp = 0; state.skills[q.cat].lvl++; }
         }
         save();
     };
 
-    window.deleteQuest = (idx) => {
-        if(confirm('DELETE_DATA_ENTRY?')) {
-            state.quests.splice(idx, 1);
-            save();
-        }
-    };
+    window.deleteQuest = (idx) => { state.quests.splice(idx, 1); save(); };
 
-    window.handleGear = (key) => {
-        const item = DB.gear[key];
-        if(state.inventory.includes(key)) {
-            state.equipped[item.slot] = state.equipped[item.slot] === key ? null : key;
-        } else if(state.gold >= item.price) {
-            state.gold -= item.price;
-            state.inventory.push(key);
-            state.equipped[item.slot] = key;
-        }
+    window.handleGear = (k) => {
+        const it = DB.gear[k];
+        if(state.inventory.includes(k)) { state.equipped[it.slot] = state.equipped[it.slot] === k ? null : k; }
+        else if(state.gold >= it.price) { state.gold -= it.price; state.inventory.push(k); state.equipped[it.slot] = k; }
         save();
     };
 
-    window.buyPerk = (key) => {
-        if(state.gold >= DB.perks[key].price) {
-            state.gold -= DB.perks[key].price;
-            state.perks.push(key);
-            save();
-        }
+    window.buyPerk = (k) => {
+        if(state.gold >= DB.perks[k].price) { state.gold -= DB.perks[k].price; state.perks.push(k); save(); }
     };
 
     window.startPiggy = () => {
-        const t = prompt('GOAL_ID:');
-        const g = parseInt(prompt('CREDIT_LIMIT:'));
-        if(t && g) {
-            state.piggy = { active: true, title: t, goal: g, current: 0 };
-            save();
-        }
+        const t = prompt('GOAL:'); const g = parseInt(prompt('AMOUNT:'));
+        if(t && g) { state.piggy = { active: true, title: t, goal: g, current: 0 }; save(); }
     };
 
     window.depositPiggy = () => {
-        const v = parseInt(prompt('AMOUNT_TO_DEPOSIT:'));
-        if(v > 0) {
-            state.piggy.current += v;
-            if(v >= 100) {
-                state.skills.money.xp += 20;
-                if(state.skills.money.xp >= 100) {
-                    state.skills.money.xp = 0; state.skills.money.lvl++;
-                }
-            }
-            save();
+        const v = parseInt(prompt('AMOUNT:'));
+        if(v > 0) { 
+            state.piggy.current += v; 
+            if(v >= 100) { state.skills.money.xp += 20; if(state.skills.money.xp >= 100) { state.skills.money.xp = 0; state.skills.money.lvl++; } }
+            save(); 
         }
     };
 
-    window.resetPiggy = () => {
-        if(confirm('ERASE_VAULT_DATA?')) {
-            state.piggy.active = false;
-            save();
-        }
-    };
-
-    // STARTING POINT
     init();
-
 </script>
 </body>
 </html>
