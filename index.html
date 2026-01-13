@@ -3,492 +3,459 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Hero RPG: Ultimate</title>
+    <title>Hero RPG: Cyberpunk Protocol</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
-        /* --- НАСТРОЙКИ И ПЕРЕМЕННЫЕ --- */
         :root {
-            /* Улучшенная палитра */
-            --bg-dark: #0f0c29;
-            --bg-light: #302b63;
-            --bg-gradient: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
-            
-            --card-bg: rgba(255, 255, 255, 0.08);
-            --card-border: rgba(255, 255, 255, 0.1);
-            
-            --text-main: #ffffff;
-            --text-muted: #b0b0b0;
-            
-            --btn-primary: #3390ec;
-            --gold: #ffd700;
-            --hp: #ff4757;
-            --piggy: #2ecc71;
-            --accent: #00d2ff;
-            
-            /* Ранги свечения */
-            --glow-common: 0 0 15px rgba(255,255,255,0.2);
-            --glow-rare: 0 0 20px rgba(51, 144, 236, 0.6);
-            --glow-epic: 0 0 25px rgba(255, 215, 0, 0.6);
-            --glow-legend: 0 0 35px rgba(180, 50, 255, 0.8);
+            --bg: #050505;
+            --neon-blue: #00ffff;
+            --neon-pink: #ff00ff;
+            --neon-yellow: #fdf001;
+            --hp-red: #ff2a6d;
+            --card-bg: rgba(15, 15, 15, 0.9);
+            --border-glow: 0 0 10px rgba(0, 255, 255, 0.3);
         }
 
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
         body {
-            background: var(--bg-gradient);
-            background-attachment: fixed; /* Фон не двигается при скролле */
-            color: var(--text-main);
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            margin: 0;
-            padding: 16px;
-            padding-bottom: 110px;
+            background: var(--bg);
+            background-image: 
+                linear-gradient(rgba(0, 255, 255, 0.05) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 255, 255, 0.05) 1px, transparent 1px);
+            background-size: 30px 30px; /* Сетка на фоне */
+            color: #e0e0e0;
+            font-family: 'Courier New', Courier, monospace;
+            margin: 0; padding: 16px; padding-bottom: 120px;
             min-height: 100vh;
         }
 
-        /* --- ЭКРАН ЗАГРУЗКИ --- */
-        #loader {
-            position: fixed; inset: 0; background: var(--bg-dark); z-index: 9999;
-            display: flex; justify-content: center; align-items: center; flex-direction: column;
-            transition: opacity 0.5s;
-        }
-        .spinner {
-            width: 40px; height: 40px; border: 4px solid rgba(255,255,255,0.1);
-            border-top-color: var(--btn-primary); border-radius: 50%;
-            animation: spin 1s linear infinite; margin-bottom: 15px;
-        }
-        @keyframes spin { to { transform: rotate(360deg); } }
-
-        /* --- АНИМАЦИИ --- */
-        @keyframes pop { 0% { transform: scale(1); } 50% { transform: scale(1.1); } 100% { transform: scale(1); } }
-        @keyframes float { 0% { transform: translateY(0px); } 50% { transform: translateY(-5px); } 100% { transform: translateY(0px); } }
-        
-        .particle {
-            position: fixed; pointer-events: none; z-index: 10000;
-            animation: fly-away 0.8s ease-out forwards;
-            font-size: 24px; font-weight: bold; color: var(--gold);
-        }
-        @keyframes fly-away {
-            0% { opacity: 1; transform: translate(0, 0) scale(1); }
-            100% { opacity: 0; transform: translate(var(--mx), var(--my)) scale(1.5); }
-        }
-
-        /* --- UI ЭЛЕМЕНТЫ --- */
-        .card {
+        /* --- КИБЕР-КАРТОЧКИ --- */
+        .cyber-card {
             background: var(--card-bg);
-            border-radius: 24px;
+            border: 1px solid var(--neon-blue);
+            box-shadow: var(--border-glow);
             padding: 20px;
-            margin-bottom: 16px;
-            border: 1px solid var(--card-border);
-            backdrop-filter: blur(12px);
-            box-shadow: 0 8px 32px rgba(0,0,0,0.3);
-            transition: transform 0.2s;
+            margin-bottom: 20px;
+            position: relative;
+            clip-path: polygon(0 0, 100% 0, 100% calc(100% - 15px), calc(100% - 15px) 100%, 0 100%);
         }
 
-        /* Аура героя */
-        .hero-avatar-container {
-            position: relative;
-            display: inline-block;
-            margin: 15px 0;
-            padding: 15px;
-            border-radius: 50%;
-            transition: box-shadow 0.5s ease;
-            animation: float 3s ease-in-out infinite;
-        }
-        .hero-row {
-            display: flex; justify-content: center; align-items: center;
-            font-size: 50px; height: 60px;
+        .cyber-card::after {
+            content: "SYSTEM.LOG"; position: absolute; top: 2px; right: 10px;
+            font-size: 8px; color: var(--neon-blue); opacity: 0.5;
         }
 
-        .bar-container {
-            background: rgba(0,0,0,0.5); height: 10px; border-radius: 6px;
-            margin: 10px 0; overflow: hidden; position: relative;
+        /* --- ПЕРСОНАЖ И АУРА --- */
+        .aura-wrapper {
+            width: 130px; height: 130px; margin: 0 auto;
+            border-radius: 50%; display: flex; align-items: center; justify-content: center;
+            position: relative; transition: all 0.5s;
         }
-        .bar-fill {
-            height: 100%; border-radius: 6px;
-            transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+        
+        .aura-scan {
+            position: absolute; inset: -5px; border: 2px solid var(--neon-blue);
+            border-radius: 50%; opacity: 0.3;
+            animation: scan 3s linear infinite;
+        }
+        @keyframes scan { 
+            0% { transform: scale(1); opacity: 0.8; }
+            50% { transform: scale(1.1); opacity: 0.2; }
+            100% { transform: scale(1); opacity: 0.8; }
+        }
+
+        .hero-avatar { font-size: 50px; display: flex; align-items: center; z-index: 5; }
+        #vis-head { position: absolute; top: 15px; font-size: 35px; }
+        #vis-weap { position: absolute; right: 5px; font-size: 35px; transform: scaleX(-1); }
+
+        /* --- БАРЫ ПРОГРЕССА --- */
+        .cyber-bar-container {
+            height: 12px; background: #111; border: 1px solid #333;
+            margin: 10px 0; position: relative;
+        }
+        .cyber-bar-fill {
+            height: 100%; transition: width 0.6s cubic-bezier(0.1, 0.7, 1.0, 0.1);
             position: relative;
         }
-        /* Блик на полоске */
-        .bar-fill::after {
-            content: ''; position: absolute; top:0; left:0; right:0; bottom:0;
-            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
-            transform: skewX(-20deg);
+        .glitch-effect {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+            animation: bar-glitch 2s infinite;
         }
+        @keyframes bar-glitch { 0% { left: -100%; } 100% { left: 100%; } }
 
         /* --- ТАБЫ --- */
-        .tabs {
-            display: flex; gap: 8px; margin-bottom: 20px; overflow-x: auto;
-            padding: 4px; scrollbar-width: none;
-        }
+        .tabs { display: flex; gap: 5px; margin-bottom: 20px; overflow-x: auto; padding-bottom: 5px; }
         .tab-btn {
-            padding: 12px 18px; border-radius: 14px;
-            background: rgba(255,255,255,0.05); color: var(--text-muted);
-            border: 1px solid rgba(255,255,255,0.05);
-            font-size: 13px; font-weight: 700; white-space: nowrap;
-            transition: all 0.2s;
+            background: transparent; border: 1px solid var(--neon-blue);
+            color: var(--neon-blue); padding: 10px 15px; font-weight: bold;
+            font-family: inherit; cursor: pointer; text-transform: uppercase;
+            font-size: 11px; clip-path: polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px);
         }
-        .tab-btn.active {
-            background: var(--btn-primary); color: white;
-            box-shadow: 0 0 15px rgba(51, 144, 236, 0.4);
-            border-color: var(--btn-primary);
-        }
+        .tab-btn.active { background: var(--neon-blue); color: #000; box-shadow: 0 0 15px var(--neon-blue); }
 
-        /* --- КВЕСТЫ --- */
-        .quest-item {
-            display: flex; justify-content: space-between; align-items: center;
-            padding: 16px; background: rgba(255,255,255,0.03);
-            border-radius: 18px; margin-bottom: 12px;
-            border-left: 4px solid var(--btn-primary);
+        /* --- СПИСОК ЗАДАЧ --- */
+        .quest-box {
+            background: rgba(0, 255, 255, 0.03); border: 1px solid rgba(0, 255, 255, 0.1);
+            padding: 15px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center;
         }
-        .quest-item.completed { opacity: 0.5; filter: grayscale(1); border-color: #555; }
-        .quest-meta { font-size: 11px; color: var(--accent); font-weight: 700; margin-bottom: 4px; display: block; }
-        
+        .quest-box.done { opacity: 0.3; border-color: #333; text-decoration: line-through; }
+
         /* --- КНОПКИ --- */
-        .btn-main {
-            background: var(--btn-primary); color: white; border: none;
-            padding: 16px; border-radius: 16px; width: 100%;
-            font-weight: 800; font-size: 16px; margin-top: 10px;
-            box-shadow: 0 4px 15px rgba(51,144,236,0.3);
-            cursor: pointer;
+        .btn-cyber {
+            width: 100%; padding: 15px; background: transparent; 
+            border: 2px solid var(--neon-pink); color: var(--neon-pink);
+            font-weight: bold; font-family: inherit; text-transform: uppercase;
+            box-shadow: 0 0 10px rgba(255, 0, 255, 0.2); margin-top: 10px;
         }
-        .btn-action {
-            padding: 8px 14px; border-radius: 10px; border: none;
-            font-weight: 700; font-size: 12px; cursor: pointer;
-        }
-
-        /* --- МАГАЗИН --- */
-        .shop-row {
-            display: flex; justify-content: space-between; align-items: center;
-            padding: 14px 0; border-bottom: 1px solid rgba(255,255,255,0.05);
-        }
+        .btn-cyber:active { background: var(--neon-pink); color: #000; }
 
         /* --- МОДАЛКА --- */
         #modal-overlay {
-            position: fixed; inset: 0; background: rgba(0,0,0,0.8); backdrop-filter: blur(5px);
-            z-index: 2000; display: none; padding: 20px;
-            animation: fadeIn 0.2s;
+            position: fixed; inset: 0; background: rgba(0,0,0,0.95);
+            z-index: 9999; display: none; padding: 25px;
+            border: 2px solid var(--neon-blue); margin: 10px;
         }
-        @keyframes fadeIn { from {opacity:0;} to {opacity:1;} }
-        
         input, select {
-            width: 100%; padding: 14px; border-radius: 12px;
-            border: 1px solid rgba(255,255,255,0.2);
-            background: rgba(255,255,255,0.1); color: white;
-            font-size: 16px; margin-bottom: 15px; outline: none;
+            width: 100%; background: #111; border: 1px solid var(--neon-blue);
+            padding: 12px; color: var(--neon-blue); margin-bottom: 15px; font-family: inherit;
         }
-        label { display: block; margin-bottom: 8px; font-size: 12px; color: var(--text-muted); font-weight: bold; }
 
         .hidden { display: none !important; }
+
+        /* Loader */
+        #loader {
+            position: fixed; inset: 0; background: #000; z-index: 10000;
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+        }
     </style>
 </head>
 <body>
 
 <div id="loader">
-    <div class="spinner"></div>
-    <div style="font-size:14px; opacity:0.7">Синхронизация с облаком...</div>
+    <div style="color: var(--neon-blue); font-size: 20px; margin-bottom: 10px;">> LOADING_CORE...</div>
+    <div id="load-bar-wrap" style="width: 200px; height: 4px; background: #222;">
+        <div id="load-bar" style="width: 0%; height: 100%; background: var(--neon-blue);"></div>
+    </div>
 </div>
 
-<div class="card" style="text-align: center; position: relative; overflow: hidden;">
-    <div style="position: absolute; top: -50px; left: -50px; width: 150px; height: 150px; background: var(--btn-primary); filter: blur(80px); opacity: 0.2;"></div>
-    
-    <div id="hero-rank" style="font-size: 10px; font-weight: 900; letter-spacing: 3px; color: var(--accent); margin-bottom: 5px;">НОВИЧОК</div>
-    
-    <div id="aura-container" class="hero-avatar-container">
-        <div class="hero-row">
-            <span id="vis-head" style="font-size:40px; transform: translateX(10px) translateY(-5px);"></span>
-            <span id="vis-body" style="z-index: 2;">👶</span>
-            <span id="vis-weap" style="font-size:40px; transform: translateX(-10px) translateY(-5px) scaleX(-1);"></span>
+<div class="cyber-card">
+    <div style="display: flex; justify-content: space-between; font-size: 10px; margin-bottom: 10px;">
+        <span id="rank-txt">ID: NOVICE_PLAYER</span>
+        <span id="total-lvl">LVL: 01</span>
+    </div>
+
+    <div class="aura-wrapper" id="aura">
+        <div class="aura-scan"></div>
+        <div class="hero-avatar">
+            <span id="vis-head"></span>
+            <span id="vis-body">👶</span>
+            <span id="vis-weap"></span>
         </div>
     </div>
 
-    <div style="font-size: 22px; font-weight: 800; margin-bottom: 10px;">
-        Lvl <span id="total-lvl">1</span>
+    <div style="display: flex; justify-content: space-between; margin-top: 20px; font-size: 12px; font-weight: bold;">
+        <span style="color: var(--hp-red);">HP: <span id="hp-val">100</span></span>
+        <span style="color: var(--neon-yellow);">CREDITS: <span id="gold-val">0</span></span>
     </div>
-
-    <div style="display: flex; justify-content: space-between; padding: 0 10px; font-size: 13px; font-weight: 700;">
-        <span>❤️ HP <span id="hp-val">100</span></span>
-        <span style="color: var(--gold);">💰 <span id="gold-val">0</span></span>
-    </div>
-    <div class="bar-container">
-        <div id="hp-bar" class="bar-fill" style="background: var(--hp); width: 100%;"></div>
+    
+    <div class="cyber-bar-container">
+        <div id="hp-bar" class="cyber-bar-fill" style="background: var(--hp-red); width: 100%;">
+            <div class="glitch-effect"></div>
+        </div>
     </div>
 </div>
 
 <div class="tabs">
-    <button class="tab-btn active" onclick="switchTab('tasks')">ЗАДАЧИ</button>
-    <button class="tab-btn" onclick="switchTab('piggy')">КОПИЛКА</button>
-    <button class="tab-btn" onclick="switchTab('shop')">МАГАЗИН</button>
-    <button class="tab-btn" onclick="switchTab('hero')">ПРОФИЛЬ</button>
+    <button class="tab-btn active" onclick="switchTab(event, 'tasks')">TASKS</button>
+    <button class="tab-btn" onclick="switchTab(event, 'shop')">ARMORY</button>
+    <button class="tab-btn" onclick="switchTab(event, 'piggy')">VAULT</button>
+    <button class="tab-btn" onclick="switchTab(event, 'hero')">STATUS</button>
 </div>
 
 <div id="tab-tasks">
     <div id="quest-list"></div>
-    <button class="btn-main" onclick="openModal()">＋ НОВЫЙ КВЕСТ</button>
-</div>
-
-<div id="tab-piggy" class="hidden">
-    <div class="card" style="border: 1px solid var(--piggy); background: linear-gradient(160deg, rgba(46,204,113,0.1), transparent);">
-        <h3 style="margin-top:0; color: var(--piggy);">💰 Финансовая цель</h3>
-        <div id="piggy-ui"></div>
-    </div>
+    <button class="btn-cyber" onclick="openModal()">+ INITIALIZE_QUEST</button>
 </div>
 
 <div id="tab-shop" class="hidden">
-    <div class="card">
-        <h4 style="margin:0 0 15px; color:var(--accent); text-transform:uppercase;">🛡️ Снаряжение</h4>
-        <div id="shop-gear"></div>
-        
-        <div style="height:1px; background:rgba(255,255,255,0.1); margin: 20px 0;"></div>
-        
-        <h4 style="margin:0 0 15px; color:var(--gold); text-transform:uppercase;">⚡ Таланты (Перки)</h4>
-        <div id="shop-perks"></div>
+    <div class="cyber-card">
+        <div style="color: var(--neon-blue); margin-bottom: 10px;">> BLACK_MARKET</div>
+        <div id="shop-gear-list"></div>
+        <div style="margin: 20px 0; border-top: 1px dashed #444;"></div>
+        <div id="shop-perks-list"></div>
+    </div>
+</div>
+
+<div id="tab-piggy" class="hidden">
+    <div class="cyber-card" style="border-color: var(--neon-yellow);">
+        <div style="color: var(--neon-yellow); margin-bottom: 15px;">> FINANCIAL_NODE</div>
+        <div id="piggy-content"></div>
     </div>
 </div>
 
 <div id="tab-hero" class="hidden">
     <div id="skills-list"></div>
-    <div class="card" style="margin-top:20px;">
-        <h4 style="margin:0 0 15px; opacity:0.7">📅 ПЛАН НА НЕДЕЛЮ</h4>
-        <div id="week-calendar"></div>
+    <div class="cyber-card" style="margin-top: 10px;">
+        <div style="color: var(--neon-blue); font-size: 11px; margin-bottom: 10px;">> WEEK_SCHEDULE</div>
+        <div id="calendar-content"></div>
     </div>
 </div>
 
 <div id="modal-overlay">
-    <h2 style="margin-top:0">Создание квеста</h2>
-    <input type="text" id="inp-title" placeholder="Что нужно сделать?">
-    
-    <label>Время (необязательно)</label>
-    <div style="display:flex; gap:10px">
+    <h3 style="color: var(--neon-blue); margin-top: 0;">NEW_DATA_ENTRY</h3>
+    <input type="text" id="inp-title" placeholder="QUEST_NAME">
+    <div style="display: flex; gap: 10px;">
         <input type="time" id="inp-start">
         <input type="time" id="inp-end">
     </div>
-
-    <label>День недели</label>
     <select id="inp-day">
-        <option value="0">Понедельник</option><option value="1">Вторник</option>
-        <option value="2">Среда</option><option value="3">Четверг</option>
-        <option value="4">Пятница</option><option value="5">Суббота</option><option value="6">Воскресенье</option>
+        <option value="0">MONDAY</option><option value="1">TUESDAY</option>
+        <option value="2">WEDNESDAY</option><option value="3">THURSDAY</option>
+        <option value="4">FRIDAY</option><option value="5">SATURDAY</option><option value="6">SUNDAY</option>
     </select>
-
-    <label>Категория</label>
-    <select id="inp-cat" onchange="toggleCustomInput(this.value)">
-        <option value="money">💰 Деньги</option>
-        <option value="education">🎓 Обучение</option>
-        <option value="health">💪 Здоровье</option>
+    <select id="inp-cat" onchange="checkCustomCat(this.value)">
+        <option value="money">MONEY_NODE</option>
+        <option value="education">INTEL_NODE</option>
+        <option value="health">BIO_NODE</option>
+        <option value="new_cat">++ ADD_NEW_NODE</option>
     </select>
+    <input type="text" id="inp-custom" class="hidden" placeholder="NODE_ID_NAME">
     
-    <input type="text" id="inp-custom" class="hidden" placeholder="Название своей категории...">
-
-    <button class="btn-main" onclick="saveTask()">СОХРАНИТЬ</button>
-    <button onclick="closeModal()" style="width:100%; padding:15px; background:none; border:none; color:#aaa; font-weight:bold;">ОТМЕНА</button>
+    <button class="btn-cyber" style="border-color: var(--neon-blue); color: var(--neon-blue);" onclick="saveQuest()">UPLOAD</button>
+    <button onclick="closeModal()" style="width: 100%; background: none; border: none; color: #555; margin-top: 15px;">ABORT</button>
 </div>
 
 <script>
     const tg = window.Telegram.WebApp;
     tg.expand();
 
-    // КОНСТАНТЫ
-    const DAYS = ['Понедельник', 'Вторник', 'Среда', 'Четверг', 'Пятница', 'Суббота', 'Воскресенье'];
+    // КОНСТАНТЫ БД
     const DB = {
         gear: {
-            'h1': { name:'Шлем рыцаря', icon:'🪖', price:500, slot:'head' },
-            'h2': { name:'Корона', icon:'👑', price:2500, slot:'head' },
-            'w1': { name:'Меч', icon:'🗡️', price:800, slot:'weapon' },
-            'w2': { name:'Посох', icon:'🪄', price:1200, slot:'weapon' },
-            'w3': { name:'Секира', icon:'🪓', price:1500, slot:'weapon' }
+            'h1': { name: 'CYBER_HELM', icon: '🪖', price: 500, slot: 'head' },
+            'h2': { name: 'NEON_CROWN', icon: '👑', price: 2500, slot: 'head' },
+            'w1': { name: 'DATA_BLADE', icon: '🗡️', price: 800, slot: 'weapon' },
+            'w2': { name: 'LINK_STAFF', icon: '🪄', price: 1500, slot: 'weapon' }
         },
         perks: {
-            'gold_boost': { name:'Алчность', desc:'+20% золота за задачи', price:1000 },
-            'shield': { name:'Эгида', desc:'-50% урона от пропусков', price:1500 }
+            'gold_boost': { name: 'OVERCLOCK', desc: '+20% CREDITS', price: 1000 },
+            'def': { name: 'FIREWALL', desc: '-50% DMG TAKEN', price: 1500 }
         }
     };
 
-    // СТЕЙТ
+    // СОСТОЯНИЕ
     let state = {
         gold: 0, hp: 100, lastLogin: new Date().toDateString(),
-        skills: { money:{lvl:1, xp:0}, education:{lvl:1, xp:0}, health:{lvl:1, xp:0} },
+        skills: { money: {lvl:1, xp:0}, education: {lvl:1, xp:0}, health: {lvl:1, xp:0} },
         quests: [], inventory: [], perks: [],
-        equipped: { head:null, weapon:null },
-        piggy: { active:false, goal:0, current:0, title:'' }
+        equipped: { head: null, weapon: null },
+        piggy: { active: false, title: '', goal: 0, current: 0 }
     };
 
-    // --- ОБЛАЧНОЕ ХРАНИЛИЩЕ ---
-    function initApp() {
-        // Пытаемся загрузить из облака
-        tg.CloudStorage.getItem('hero_v20_save', (err, value) => {
-            if (!err && value) {
-                try {
-                    const cloudState = JSON.parse(value);
-                    // Мерджим с дефолтным на случай новых полей
-                    state = { ...state, ...cloudState };
-                    console.log("Loaded from Cloud");
-                } catch(e) { console.error(e); }
-            } else {
-                // Фолбэк на локальное
-                const local = localStorage.getItem('hero_v20_save');
-                if(local) state = JSON.parse(local);
-                console.log("Loaded from Local");
-            }
+    // --- СИСТЕМА СОХРАНЕНИЯ (CLOUD + LOCAL) ---
+    function init() {
+        // Симуляция загрузки
+        let progress = 0;
+        const interval = setInterval(() => {
+            progress += 10;
+            document.getElementById('load-bar').style.width = progress + '%';
+            if(progress >= 100) clearInterval(interval);
+        }, 50);
 
-            // После загрузки запускаем логику
-            checkDailyPenalty();
-            renderAll();
+        tg.CloudStorage.getItem('cyber_rpg_save', (err, value) => {
+            if(!err && value) {
+                state = JSON.parse(value);
+            } else {
+                const local = localStorage.getItem('cyber_rpg_save');
+                if(local) state = JSON.parse(local);
+            }
             
-            // Убираем загрузчик
-            document.getElementById('loader').style.opacity = '0';
-            setTimeout(() => document.getElementById('loader').style.display='none', 500);
+            checkDailyPenalty();
+            render();
+            
+            setTimeout(() => {
+                document.getElementById('loader').style.display = 'none';
+            }, 800);
         });
     }
 
     function save() {
-        // Сохраняем в локалку (быстро)
-        localStorage.setItem('hero_v20_save', JSON.stringify(state));
-        
-        // Сохраняем в облако (надежно)
-        tg.CloudStorage.setItem('hero_v20_save', JSON.stringify(state), (err, succ) => {
-            if(err) console.error("Cloud Error", err);
-        });
-        
-        renderAll();
+        const data = JSON.stringify(state);
+        localStorage.setItem('cyber_rpg_save', data);
+        tg.CloudStorage.setItem('cyber_rpg_save', data);
+        render();
     }
 
     // --- ЛОГИКА ---
     function checkDailyPenalty() {
         const today = new Date().toDateString();
         if(state.lastLogin !== today) {
-            const yestIdx = (new Date().getDay() + 5) % 7;
-            const missed = state.quests.filter(q => parseInt(q.day) === yestIdx && !q.done);
+            const yesterday = (new Date().getDay() + 5) % 7;
+            const missed = state.quests.filter(q => parseInt(q.day) === yesterday && !q.done);
             
             if(missed.length > 0) {
                 let dmg = missed.length * 15;
-                if(state.perks.includes('shield')) dmg = Math.floor(dmg/2);
+                if(state.perks.includes('def')) dmg = Math.floor(dmg/2);
                 state.hp = Math.max(0, state.hp - dmg);
-                tg.showAlert(`⚠️ Новый день!\nПропущено задач: ${missed.length}\nПолучено урона: ${dmg}`);
-            } else {
-                state.hp = Math.min(100, state.hp + 10);
+                tg.showAlert(`SYSTEM_NOTICE: Yesterday you missed ${missed.length} tasks. HP reduced by ${dmg}.`);
             }
             state.lastLogin = today;
             save();
         }
     }
 
-    // --- РЕНДЕР ---
-    function renderAll() {
-        // 1. Статы
+    // --- РЕНДЕРИНГ ---
+    function render() {
+        // Основные статы
         document.getElementById('gold-val').innerText = state.gold;
         document.getElementById('hp-val').innerText = state.hp;
         document.getElementById('hp-bar').style.width = state.hp + '%';
 
-        // 2. Аватар и Аура (Визуальный апгрейд)
-        let totalLvl = Object.values(state.skills).reduce((a,b)=>a+b.lvl, 0);
-        document.getElementById('total-lvl').innerText = totalLvl;
-        
-        let rank = "НОВИЧОК";
-        let skin = "👶";
-        let aura = "var(--glow-common)";
-        
-        if(totalLvl > 5) { rank="ИСКАТЕЛЬ"; skin="🏹"; aura="var(--glow-rare)"; }
-        if(totalLvl > 15) { rank="ВОИН"; skin="⚔️"; aura="var(--glow-epic)"; }
-        if(totalLvl > 30) { rank="ЛЕГЕНДА"; skin="🦸"; aura="var(--glow-legend)"; }
-        
-        document.getElementById('hero-rank').innerText = rank;
-        document.getElementById('vis-body').innerText = skin;
+        // Уровень и Ранг
+        let totalLvl = 0;
+        for(let s in state.skills) totalLvl += state.skills[s].lvl;
+        document.getElementById('total-lvl').innerText = 'LVL: ' + (totalLvl < 10 ? '0'+totalLvl : totalLvl);
+
+        const aura = document.getElementById('aura');
+        if(totalLvl > 15) aura.style.borderColor = 'var(--neon-pink)';
+        if(totalLvl > 30) aura.style.borderColor = 'var(--neon-yellow)';
+
+        // Визуал героя
         document.getElementById('vis-head').innerText = state.equipped.head ? DB.gear[state.equipped.head].icon : '';
         document.getElementById('vis-weap').innerText = state.equipped.weapon ? DB.gear[state.equipped.weapon].icon : '';
-        document.getElementById('aura-container').style.boxShadow = aura;
 
-        // 3. Задачи
-        const todayIdx = (new Date().getDay() + 6) % 7;
-        const tasks = state.quests.filter(q => parseInt(q.day) === todayIdx);
-        tasks.sort((a,b) => (a.start||'99').localeCompare(b.start||'99'));
+        // Список задач (сегодняшние)
+        const today = (new Date().getDay() + 6) % 7;
+        const dailyQuests = state.quests.filter(q => parseInt(q.day) === today);
         
-        document.getElementById('quest-list').innerHTML = tasks.map((q, i) => {
-            const gIdx = state.quests.indexOf(q);
+        document.getElementById('quest-list').innerHTML = dailyQuests.map((q, i) => {
+            const globalIdx = state.quests.indexOf(q);
             return `
-            <div class="quest-item ${q.done?'completed':''}">
-                <div>
-                    ${q.start ? `<span class="quest-meta">⏰ ${q.start}-${q.end||''}</span>` : ''}
-                    <b>${q.title}</b>
-                    <span style="font-size:10px; opacity:0.6; text-transform:uppercase;">${q.cat}</span>
+                <div class="quest-box ${q.done ? 'done' : ''}">
+                    <div>
+                        <div style="font-size:9px; color:var(--neon-blue)">[${q.cat.toUpperCase()}] ${q.start || ''}</div>
+                        <div style="font-weight:bold">${q.title}</div>
+                    </div>
+                    ${q.done ? 
+                        `<button onclick="deleteQuest(${globalIdx})" style="background:none; border:none; color:var(--hp-red)">[DEL]</button>` : 
+                        `<button onclick="completeQuest(event, ${globalIdx})" style="background:var(--neon-blue); border:none; color:#000; padding:5px 10px; font-weight:bold">OK</button>`
+                    }
                 </div>
-                ${q.done ? 
-                    `<button class="btn-action" style="background:rgba(255,255,255,0.1)" onclick="delQuest(${gIdx})">🗑️</button>` : 
-                    `<button class="btn-action" style="background:var(--btn-primary); color:white" onclick="doQuest(event, ${gIdx})">✓</button>`
-                }
-            </div>`;
-        }).join('') || '<div style="text-align:center; opacity:0.5; padding:20px;">Нет задач на сегодня</div>';
-
-        // 4. Копилка
-        const p = state.piggy;
-        if(p.active) {
-            const pct = Math.min(100, (p.current/p.goal)*100);
-            document.getElementById('piggy-ui').innerHTML = `
-                <div style="display:flex; justify-content:space-between; margin-bottom:5px;">
-                    <b>${p.title}</b><span>${p.current}/${p.goal}</span>
-                </div>
-                <div class="bar-container"><div class="bar-fill" style="width:${pct}%; background:var(--piggy)"></div></div>
-                <button class="btn-main" style="background:var(--piggy); margin-bottom:10px" onclick="addMoney()">➕ ВНЕСТИ</button>
-                <button onclick="delPiggy()" style="border:none; background:none; color:#777; width:100%">Удалить цель</button>
             `;
-        } else {
-            document.getElementById('piggy-ui').innerHTML = `<button class="btn-main" onclick="newPiggy()">🎯 СОЗДАТЬ ЦЕЛЬ</button>`;
-        }
+        }).join('') || '<div style="text-align:center; opacity:0.3; padding:20px;">NO_ACTIVE_QUESTS</div>';
 
-        // 5. Магазин
+        // Магазин
         renderShop();
+        
+        // Копилка
+        renderPiggy();
 
-        // 6. Навыки
+        // Профиль (Навыки)
         document.getElementById('skills-list').innerHTML = Object.keys(state.skills).map(k => `
-            <div class="card" onclick="tryDelSkill('${k}')">
-                <div style="display:flex; justify-content:space-between; font-weight:bold; margin-bottom:5px;">
-                    <span style="text-transform:uppercase">${k} (Lvl ${state.skills[k].lvl})</span>
+            <div class="cyber-card">
+                <div style="display:flex; justify-content:space-between; font-size:11px; margin-bottom:5px;">
+                    <span>${k.toUpperCase()} [LVL ${state.skills[k].lvl}]</span>
                     <span>${state.skills[k].xp}%</span>
                 </div>
-                <div class="bar-container"><div class="bar-fill" style="width:${state.skills[k].xp}%; background:var(--btn-primary)"></div></div>
+                <div class="cyber-bar-container">
+                    <div class="cyber-bar-fill" style="width:${state.skills[k].xp}%; background:var(--neon-blue)"></div>
+                </div>
             </div>
         `).join('');
-        
-        // 7. Календарь
-        let weekHTML = '';
-        DAYS.forEach((d,i)=>{
-            const c = state.quests.filter(q=>parseInt(q.day)===i && !q.done).length;
-            if(c>0) weekHTML+=`<div style="display:flex; justify-content:space-between; padding:5px 0; border-bottom:1px solid rgba(255,255,255,0.05); font-size:13px;"><span>${d}</span><span style="color:var(--accent)">${c} задач</span></div>`
-        });
-        document.getElementById('week-calendar').innerHTML = weekHTML || '<div style="text-align:center; opacity:0.5">Пусто</div>';
     }
 
     function renderShop() {
         const gearHTML = Object.keys(DB.gear).map(k => {
-            const i = DB.gear[k];
-            const has = state.inventory.includes(k);
-            const eq = state.equipped[i.slot] === k;
-            return `<div class="shop-row">
-                <div style="display:flex; align-items:center; gap:10px;"><span style="font-size:24px">${i.icon}</span><b>${i.name}</b></div>
-                <button class="btn-action" style="background:${has?(eq?'var(--hp)':'var(--btn-primary)'):'var(--gold)'; color:${has?'white':'black'}}" onclick="buyGear('${k}')">
-                    ${has?(eq?'СНЯТЬ':'НАДЕТЬ'):i.price}
-                </button>
-            </div>`;
+            const item = DB.gear[k];
+            const owned = state.inventory.includes(k);
+            const equipped = state.equipped[item.slot] === k;
+            return `
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                    <span>${item.icon} ${item.name}</span>
+                    <button onclick="handleGear('${k}')" style="background:${owned ? (equipped ? 'var(--hp-red)' : 'var(--neon-blue)') : 'var(--neon-yellow)'}; border:none; padding:5px 10px; font-weight:bold; font-size:10px;">
+                        ${owned ? (equipped ? 'REMOVE' : 'EQUIP') : item.price}
+                    </button>
+                </div>
+            `;
         }).join('');
-        document.getElementById('shop-gear').innerHTML = gearHTML;
+        document.getElementById('shop-gear-list').innerHTML = gearHTML;
 
         const perkHTML = Object.keys(DB.perks).map(k => {
-            const i = DB.perks[k];
+            const p = DB.perks[k];
             const has = state.perks.includes(k);
-            return `<div class="shop-row">
-                <div><b>${i.name}</b><br><span style="font-size:10px; opacity:0.7">${i.desc}</span></div>
-                <button class="btn-action" ${has?'disabled':''} style="background:${has?'#555':'var(--gold)'}; color:${has?'#999':'black'}" onclick="buyPerk('${k}')">
-                    ${has?'ЕСТЬ':i.price}
-                </button>
-            </div>`;
+            return `
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                    <div><div style="font-weight:bold; font-size:12px;">${p.name}</div><div style="font-size:9px; opacity:0.6">${p.desc}</div></div>
+                    <button onclick="buyPerk('${k}')" ${has ? 'disabled' : ''} style="background:${has ? '#333' : 'var(--neon-pink)'}; border:none; color:#000; padding:5px 10px; font-weight:bold;">
+                        ${has ? 'OWNED' : p.price}
+                    </button>
+                </div>
+            `;
         }).join('');
-        document.getElementById('shop-perks').innerHTML = perkHTML;
+        document.getElementById('shop-perks-list').innerHTML = perkHTML;
+    }
+
+    function renderPiggy() {
+        const p = state.piggy;
+        const box = document.getElementById('piggy-content');
+        if(!p.active) {
+            box.innerHTML = `<button class="btn-cyber" style="border-color:var(--neon-yellow); color:var(--neon-yellow)" onclick="startPiggy()">INIT_VAULT_GOAL</button>`;
+        } else {
+            const pct = Math.min(100, (p.current / p.goal) * 100);
+            box.innerHTML = `
+                <div style="font-weight:bold; margin-bottom:5px;">${p.title.toUpperCase()}</div>
+                <div style="font-size:11px; margin-bottom:10px;">PROGRESS: ${p.current} / ${p.goal}</div>
+                <div class="cyber-bar-container"><div class="cyber-bar-fill" style="width:${pct}%; background:var(--neon-yellow)"></div></div>
+                <button class="btn-cyber" style="border-color:var(--neon-yellow); color:var(--neon-yellow)" onclick="depositPiggy()">+ DEPOSIT</button>
+                <button onclick="resetPiggy()" style="background:none; border:none; color:#444; width:100%; margin-top:10px; font-size:10px;">TERMINATE_GOAL</button>
+            `;
+        }
     }
 
     // --- ДЕЙСТВИЯ ---
-    window.doQuest = (e, idx) => {
-        spawnParticles(e.clientX, e.clientY);
-        tg.HapticFeedback.notificationOccurred('success'); // ВИБРАЦИЯ
+    window.switchTab = (e, name) => {
+        tg.HapticFeedback.impactOccurred('light');
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        e.target.classList.add('active');
+        document.querySelectorAll('[id^="tab-"]').forEach(t => t.classList.add('hidden'));
+        document.getElementById('tab-'+name).classList.remove('hidden');
+    };
+
+    window.openModal = () => {
+        document.getElementById('modal-overlay').style.display = 'block';
+    };
+
+    window.closeModal = () => {
+        document.getElementById('modal-overlay').style.display = 'none';
+    };
+
+    window.checkCustomCat = (val) => {
+        document.getElementById('inp-custom').classList.toggle('hidden', val !== 'new_cat');
+    };
+
+    window.saveQuest = () => {
+        const title = document.getElementById('inp-title').value;
+        if(!title) return;
+        let cat = document.getElementById('inp-cat').value;
+        if(cat === 'new_cat') {
+            cat = document.getElementById('inp-custom').value || 'misc';
+            if(!state.skills[cat]) state.skills[cat] = {lvl:1, xp:0};
+        }
         
+        state.quests.push({
+            title, cat,
+            day: document.getElementById('inp-day').value,
+            start: document.getElementById('inp-start').value,
+            end: document.getElementById('inp-end').value,
+            done: false
+        });
+        closeModal();
+        save();
+    };
+
+    window.completeQuest = (e, idx) => {
+        tg.HapticFeedback.notificationOccurred('success');
         const q = state.quests[idx];
         q.done = true;
         
@@ -496,120 +463,75 @@
         if(state.perks.includes('gold_boost')) reward = 60;
         state.gold += reward;
 
-        const cat = q.cat;
-        if(state.skills[cat]) {
-            state.skills[cat].xp += 25;
-            if(state.skills[cat].xp >= 100) {
-                state.skills[cat].xp = 0;
-                state.skills[cat].lvl++;
-                tg.showAlert(`🎉 Уровень в "${cat}" повышен!`);
+        if(state.skills[q.cat]) {
+            state.skills[q.cat].xp += 25;
+            if(state.skills[q.cat].xp >= 100) {
+                state.skills[q.cat].xp = 0;
+                state.skills[q.cat].lvl++;
             }
         }
         save();
     };
 
-    window.spawnParticles = (x, y) => {
-        for(let i=0; i<8; i++) {
-            const p = document.createElement('div'); p.className='particle'; p.innerText='💰';
-            p.style.left=x+'px'; p.style.top=y+'px';
-            p.style.setProperty('--mx', (Math.random()-0.5)*200+'px');
-            p.style.setProperty('--my', (Math.random()-1)*150+'px');
-            document.body.appendChild(p); setTimeout(()=>p.remove(), 800);
+    window.deleteQuest = (idx) => {
+        if(confirm('DELETE_DATA_ENTRY?')) {
+            state.quests.splice(idx, 1);
+            save();
         }
     };
 
-    // --- МОДАЛКА И СФЕРЫ ---
-    window.openModal = () => {
-        tg.HapticFeedback.impactOccurred('light');
-        const sel = document.getElementById('inp-cat');
-        while(sel.options.length > 3) sel.remove(3); // Очистка старых
-        
-        Object.keys(state.skills).forEach(k => {
-            if(!['money','education','health'].includes(k)) {
-                let o = document.createElement('option'); o.value=k; o.innerText='✨ '+k; sel.add(o);
-            }
-        });
-        let o = document.createElement('option'); o.value='_new'; o.innerText='➕ Своя сфера...'; sel.add(o);
-        
-        document.getElementById('modal-overlay').style.display='block';
-    };
-
-    window.toggleCustomInput = (v) => {
-        document.getElementById('inp-custom').classList.toggle('hidden', v !== '_new');
-    };
-    
-    window.closeModal = () => document.getElementById('modal-overlay').style.display='none';
-
-    window.saveTask = () => {
-        let t = document.getElementById('inp-title').value;
-        if(!t) return;
-        let c = document.getElementById('inp-cat').value;
-        if(c === '_new') {
-            c = document.getElementById('inp-custom').value || 'Разное';
-            if(!state.skills[c]) state.skills[c] = {lvl:1, xp:0};
+    window.handleGear = (key) => {
+        const item = DB.gear[key];
+        if(state.inventory.includes(key)) {
+            state.equipped[item.slot] = state.equipped[item.slot] === key ? null : key;
+        } else if(state.gold >= item.price) {
+            state.gold -= item.price;
+            state.inventory.push(key);
+            state.equipped[item.slot] = key;
         }
-        state.quests.push({
-            title: t,
-            start: document.getElementById('inp-start').value,
-            end: document.getElementById('inp-end').value,
-            day: document.getElementById('inp-day').value,
-            cat: c, done: false
-        });
-        closeModal();
         save();
     };
 
-    window.delQuest = (i) => { if(confirm('Удалить?')) { state.quests.splice(i,1); save(); }};
-
-    // --- КОПИЛКА / МАГАЗИН / ВКЛАДКИ ---
-    window.newPiggy = () => {
-        const t = prompt('Цель?'); const g = parseInt(prompt('Сумма?'));
-        if(t && g) { state.piggy={active:true, title:t, goal:g, current:0}; save(); }
+    window.buyPerk = (key) => {
+        if(state.gold >= DB.perks[key].price) {
+            state.gold -= DB.perks[key].price;
+            state.perks.push(key);
+            save();
+        }
     };
-    window.addMoney = () => {
-        const v = parseInt(prompt('Внесли (мин. 100 для опыта)?'));
-        if(v) {
+
+    window.startPiggy = () => {
+        const t = prompt('GOAL_ID:');
+        const g = parseInt(prompt('CREDIT_LIMIT:'));
+        if(t && g) {
+            state.piggy = { active: true, title: t, goal: g, current: 0 };
+            save();
+        }
+    };
+
+    window.depositPiggy = () => {
+        const v = parseInt(prompt('AMOUNT_TO_DEPOSIT:'));
+        if(v > 0) {
             state.piggy.current += v;
             if(v >= 100) {
                 state.skills.money.xp += 20;
-                if(state.skills.money.xp>=100) {state.skills.money.xp=0; state.skills.money.lvl++};
+                if(state.skills.money.xp >= 100) {
+                    state.skills.money.xp = 0; state.skills.money.lvl++;
+                }
             }
             save();
         }
     };
-    window.delPiggy = () => { if(confirm('Удалить цель?')) { state.piggy.active=false; save(); }};
 
-    window.buyGear = (k) => {
-        const i = DB.gear[k];
-        if(state.inventory.includes(k)) {
-            state.equipped[i.slot] = (state.equipped[i.slot] === k) ? null : k;
-        } else if(state.gold >= i.price) {
-            state.gold -= i.price; state.inventory.push(k); state.equipped[i.slot] = k;
-            tg.HapticFeedback.notificationOccurred('success');
-        }
-        save();
-    };
-    window.buyPerk = (k) => {
-        if(state.gold >= DB.perks[k].price) {
-            state.gold -= DB.perks[k].price; state.perks.push(k); save();
+    window.resetPiggy = () => {
+        if(confirm('ERASE_VAULT_DATA?')) {
+            state.piggy.active = false;
+            save();
         }
     };
 
-    window.tryDelSkill = (k) => {
-        if(['money','education','health'].includes(k)) return;
-        if(confirm(`Удалить сферу "${k}"?`)) { delete state.skills[k]; save(); }
-    };
-
-    window.switchTab = (t) => {
-        tg.HapticFeedback.impactOccurred('light');
-        document.querySelectorAll('[id^="tab-"]').forEach(e=>e.classList.add('hidden'));
-        document.querySelectorAll('.tab-btn').forEach(e=>e.classList.remove('active'));
-        document.getElementById('tab-'+t).classList.remove('hidden');
-        event.currentTarget.classList.add('active');
-    };
-
-    // START
-    initApp();
+    // STARTING POINT
+    init();
 
 </script>
 </body>
