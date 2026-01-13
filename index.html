@@ -2,196 +2,225 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Hero RPG: Glass Edition v25</title>
+    <title>Hero Life RPG v28</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         :root {
-            --glass: rgba(255, 255, 255, 0.12);
-            --border: rgba(255, 255, 255, 0.2);
-            --bg-gradient: linear-gradient(135deg, #1e3c72, #2a5298, #2193b0);
+            --bg: linear-gradient(160deg, #1a1a2e 0%, #16213e 100%);
+            --glass: rgba(255, 255, 255, 0.07);
+            --glass-active: rgba(255, 255, 255, 0.15);
+            --border: rgba(255, 255, 255, 0.1);
+            --accent: #4deeea;
+            --hp: #ff4d4d;
+            --gold: #ffb347;
         }
 
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
         body {
-            background: var(--bg-gradient);
+            background: #1a1a2e;
+            background-image: var(--bg);
             background-attachment: fixed;
-            color: #ffffff;
-            font-family: -apple-system, system-ui, sans-serif;
-            margin: 0; padding: 16px; padding-bottom: 120px;
+            color: #fff;
+            font-family: -apple-system, system-ui, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            margin: 0; padding: 15px; padding-bottom: 110px;
             min-height: 100vh;
-            overflow-x: hidden;
         }
 
-        /* Основная карточка с эффектом стекла */
         .glass-card {
             background: var(--glass);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
+            backdrop-filter: blur(25px);
+            -webkit-backdrop-filter: blur(25px);
             border: 1px solid var(--border);
-            border-radius: 28px;
-            padding: 24px;
-            margin-bottom: 20px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            border-radius: 26px;
+            padding: 22px;
+            margin-bottom: 16px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.2);
         }
 
-        /* Аура персонажа */
-        .aura-box {
-            width: 150px; height: 150px; margin: 0 auto;
+        /* Визуализация Героя */
+        .hero-view {
+            width: 140px; height: 140px; margin: 0 auto 15px;
             border-radius: 50%; display: flex; align-items: center; justify-content: center;
-            position: relative;
-            background: rgba(255,255,255,0.05);
-            transition: 1s;
-            animation: pulse-glow 3s infinite ease-in-out;
+            position: relative; background: rgba(255,255,255,0.02);
+            transition: all 0.5s ease;
         }
-        @keyframes pulse-glow {
-            0%, 100% { box-shadow: 0 0 15px rgba(255,255,255,0.1); transform: scale(1); }
-            50% { box-shadow: 0 0 35px rgba(255,255,255,0.3); transform: scale(1.03); }
-        }
+        .avatar-main { font-size: 60px; z-index: 5; }
+        .slot { position: absolute; font-size: 38px; z-index: 6; filter: drop-shadow(0 2px 5px rgba(0,0,0,0.5)); }
+        #slot-h { top: -15px; left: 50%; transform: translateX(-50%); }
+        #slot-w { bottom: 10px; right: -10px; }
 
-        .avatar-txt { font-size: 65px; position: relative; z-index: 2; }
-        #vis-head { position: absolute; top: -20px; font-size: 40px; z-index: 3; }
-        #vis-weap { position: absolute; right: -20px; bottom: 20px; font-size: 40px; z-index: 3; }
+        /* Полоски прогресса */
+        .bar-wrap { height: 10px; background: rgba(0,0,0,0.3); border-radius: 20px; margin: 10px 0; overflow: hidden; border: 1px solid var(--border); }
+        .bar-fill { height: 100%; border-radius: 20px; transition: width 0.8s cubic-bezier(0.17, 0.67, 0.83, 0.67); }
 
-        /* Прогресс-бары */
-        .bar-wrap { height: 10px; background: rgba(0,0,0,0.2); border-radius: 10px; margin: 10px 0; overflow: hidden; }
-        .bar-fill { height: 100%; transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1); border-radius: 10px; }
-
-        /* Кнопки меню (Табы) */
-        .tabs-scroll { display: flex; gap: 10px; overflow-x: auto; padding-bottom: 15px; }
-        .tab {
+        /* Навигация */
+        .nav { display: flex; gap: 10px; overflow-x: auto; margin-bottom: 20px; scrollbar-width: none; }
+        .nav::-webkit-scrollbar { display: none; }
+        .nav-btn {
             background: var(--glass); border: 1px solid var(--border);
-            color: #fff; padding: 12px 20px; border-radius: 20px;
-            font-size: 14px; font-weight: 600; white-space: nowrap;
+            color: rgba(255,255,255,0.6); padding: 12px 20px; border-radius: 18px; 
+            white-space: nowrap; font-size: 13px; font-weight: 600; transition: 0.3s;
         }
-        .tab.active { background: #ffffff; color: #1e3c72; border-color: #fff; }
+        .nav-btn.active { background: #fff; color: #1a1a2e; border-color: #fff; transform: translateY(-2px); }
 
-        /* Списки задач */
-        .item-row {
-            background: rgba(255,255,255,0.08); border-radius: 20px;
-            padding: 16px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center;
+        /* Задачи */
+        .task-row {
+            display: flex; justify-content: space-between; align-items: center;
+            background: var(--glass); border: 1px solid var(--border);
+            padding: 16px; border-radius: 22px; margin-bottom: 12px;
         }
-        .item-row.done { opacity: 0.4; transform: scale(0.98); }
+        .task-row.done { opacity: 0.3; filter: grayscale(1); }
+        .task-info b { display: block; font-size: 15px; margin-bottom: 3px; }
+        .task-info i { font-style: normal; font-size: 11px; color: var(--accent); font-weight: bold; }
+        .time-tag { font-size: 10px; opacity: 0.6; display: block; margin-top: 4px; }
 
-        /* Главная кнопка */
-        .btn-action {
-            width: 100%; padding: 18px; border-radius: 24px; border: none;
-            background: #ffffff; color: #1e3c72;
-            font-weight: 800; font-size: 16px; box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        /* Кнопки */
+        .btn-main {
+            width: 100%; padding: 18px; border-radius: 22px; border: none;
+            background: #fff; color: #1a1a2e; font-weight: 800; font-size: 15px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1); transition: 0.2s;
         }
+        .btn-main:active { transform: scale(0.96); }
 
-        #modal-view {
-            position: fixed; inset: 0; background: rgba(0,0,0,0.7);
-            backdrop-filter: blur(15px); z-index: 999; display: none; align-items: center; justify-content: center; padding: 20px;
+        /* Поля ввода */
+        input, select {
+            width: 100%; padding: 14px; margin-bottom: 12px; border-radius: 14px;
+            border: 1px solid var(--border); background: rgba(0,0,0,0.2); color: #fff;
+            font-size: 14px; outline: none;
+        }
+        label { font-size: 11px; opacity: 0.5; margin: 0 0 5px 5px; display: block; }
+
+        #modal {
+            position: fixed; inset: 0; background: rgba(0,0,0,0.8);
+            backdrop-filter: blur(15px); z-index: 999; display: none;
+            align-items: center; justify-content: center; padding: 25px;
         }
 
         .hidden { display: none !important; }
+        .ver { text-align: center; font-size: 10px; opacity: 0.2; margin-top: 30px; letter-spacing: 1px; }
 
-        /* Загрузочный экран */
-        #loading-screen {
-            position: fixed; inset: 0; background: #1e3c72; z-index: 1000;
-            display: flex; flex-direction: column; justify-content: center; align-items: center;
-        }
+        /* Сет Магазина */
+        .shop-grid { display: grid; gap: 10px; }
     </style>
 </head>
 <body>
 
-<div id="loading-screen">
-    <div style="font-size: 14px; letter-spacing: 3px; margin-bottom: 20px; opacity: 0.8;">СИНХРОНИЗАЦИЯ...</div>
-    <div style="width: 180px; height: 4px; background: rgba(255,255,255,0.1); border-radius: 10px;">
-        <div id="load-progress" style="width: 0%; height: 100%; background: #fff; transition: 0.3s;"></div>
-    </div>
-</div>
-
-<div class="glass-card" style="text-align: center;">
-    <div style="display: flex; justify-content: space-between; font-size: 11px; opacity: 0.7; font-weight: bold; margin-bottom: 15px;">
-        <span id="txt-rank">АНАЛИЗ РАНГА...</span>
-        <span>УРОВЕНЬ <span id="txt-lvl">1</span></span>
+    <div id="loading" style="position:fixed; inset:0; background:#1a1a2e; z-index:10000; display:flex; flex-direction:column; align-items:center; justify-content:center;">
+        <div style="font-weight:900; color:var(--accent); margin-bottom:20px; letter-spacing:4px;">SYNCING_SYSTEM...</div>
+        <div style="width:200px; height:2px; background:rgba(255,255,255,0.05); border-radius:10px;">
+            <div id="load-bar" style="width:0%; height:100%; background:#fff; transition:0.3s; box-shadow: 0 0 15px #fff;"></div>
+        </div>
     </div>
 
-    <div class="aura-box" id="aura">
-        <span id="vis-head"></span>
-        <div class="avatar-txt">👶</div>
-        <span id="vis-weap"></span>
+    <div class="glass-card" style="text-align: center;">
+        <div style="display:flex; justify-content:space-between; font-size:11px; font-weight:800; opacity:0.6; margin-bottom:20px;">
+            <span id="rank">АНАЛИЗ...</span>
+            <span>УРОВЕНЬ <span id="total-lvl">1</span></span>
+        </div>
+
+        <div class="hero-view" id="aura">
+            <span id="slot-h" class="slot"></span>
+            <div class="avatar-main">👶</div>
+            <span id="slot-w" class="slot"></span>
+        </div>
+
+        <div style="display:flex; justify-content:space-between; margin-top:25px; font-size:15px; font-weight:900;">
+            <span style="color:var(--hp);">❤ <span id="hp-val">100</span></span>
+            <span style="color:var(--gold);">💰 <span id="gold-val">0</span></span>
+        </div>
+        <div class="bar-wrap">
+            <div id="hp-fill" class="bar-fill" style="background:var(--hp); width:100%;"></div>
+        </div>
     </div>
 
-    <div style="display: flex; justify-content: space-between; margin-top: 25px; font-size: 14px; font-weight: 900;">
-        <span style="color: #ff5e62;">❤️ <span id="val-hp">100</span></span>
-        <span style="color: #ffb347;">💰 <span id="val-gold">0</span></span>
+    <div class="nav">
+        <button class="nav-btn active" onclick="tab(event, 'tasks')">ЗАДАЧИ</button>
+        <button class="nav-btn" onclick="tab(event, 'shop')">АРСЕНАЛ</button>
+        <button class="nav-btn" onclick="tab(event, 'piggy')">КОПИЛКА</button>
+        <button class="nav-btn" onclick="tab(event, 'stats')">ГЕРОЙ</button>
     </div>
-    <div class="bar-wrap">
-        <div id="bar-hp" class="bar-fill" style="background: #ff5e62; width: 100%;"></div>
+
+    <div id="v-tasks">
+        <div id="task-list"></div>
+        <button class="btn-main" onclick="openAdd()">+ НОВЫЙ КВЕСТ</button>
     </div>
-</div>
 
-<div class="tabs-scroll">
-    <button class="tab active" onclick="nav(event, 'tasks')">ЗАДАЧИ</button>
-    <button class="tab" onclick="nav(event, 'shop')">АРСЕНАЛ</button>
-    <button class="tab" onclick="nav(event, 'piggy')">КОПИЛКА</button>
-    <button class="tab" onclick="nav(event, 'hero')">СТАТУС</button>
-</div>
-
-<div id="view-tasks">
-    <div id="list-quests"></div>
-    <button class="btn-action" onclick="showAdd()">+ НОВАЯ ЗАДАЧА</button>
-</div>
-
-<div id="view-shop" class="hidden">
-    <div class="glass-card">
-        <h4 style="margin: 0 0 15px 0; opacity: 0.8;">РЕДКОЕ СНАРЯЖЕНИЕ</h4>
-        <div id="list-gear"></div>
-        <hr style="border: none; border-top: 1px solid var(--border); margin: 20px 0;">
-        <div id="list-perks"></div>
+    <div id="v-shop" class="hidden">
+        <div class="glass-card">
+            <h4 style="margin:0 0 15px 0; color:var(--accent);">ЭКИПИРОВКА</h4>
+            <div id="list-gear" class="shop-grid"></div>
+            <h4 style="margin:25px 0 15px 0; color:var(--accent);">МОДИФИКАТОРЫ</h4>
+            <div id="list-perks" class="shop-grid"></div>
+        </div>
     </div>
-</div>
 
-<div id="view-piggy" class="hidden">
-    <div class="glass-card" id="piggy-ui"></div>
-</div>
-
-<div id="view-hero" class="hidden">
-    <div id="list-skills"></div>
-</div>
-
-<div style="text-align: center; font-size: 9px; opacity: 0.3; margin-top: 20px;">SYSTEM_VERSION: v25_GLASS_STABLE</div>
-
-<div id="modal-view">
-    <div class="glass-card" style="width: 100%; max-width: 400px;">
-        <h3 style="margin-top: 0;">Новая цель</h3>
-        <input type="text" id="in-title" placeholder="Что нужно сделать?">
-        <select id="in-day">
-            <option value="0">Понедельник</option><option value="1">Вторник</option>
-            <option value="2">Среда</option><option value="3">Четверг</option>
-            <option value="4">Пятница</option><option value="5">Суббота</option><option value="6">Воскресенье</option>
-        </select>
-        <select id="in-cat" onchange="document.getElementById('in-custom').classList.toggle('hidden', this.value !== 'new')">
-            <option value="money">💰 Финансы</option>
-            <option value="education">📚 Интеллект</option>
-            <option value="health">💪 Тело</option>
-            <option value="new">+ Другая сфера</option>
-        </select>
-        <input type="text" id="in-custom" class="hidden" placeholder="Название сферы">
-        <button class="btn-action" onclick="addQuest()">АКТИВИРОВАТЬ</button>
-        <button onclick="hideAdd()" style="width: 100%; background: none; border: none; color: #fff; opacity: 0.5; margin-top: 15px;">ОТМЕНА</button>
+    <div id="v-piggy" class="hidden">
+        <div class="glass-card" id="piggy-ui"></div>
     </div>
-</div>
+
+    <div id="v-stats" class="hidden">
+        <div id="stats-list"></div>
+    </div>
+
+    <div class="ver">BUILD: V28_ULTIMATE_STABLE</div>
+
+    <div id="modal">
+        <div class="glass-card" style="width:100%; max-width:400px; background: rgba(25, 25, 45, 0.98);">
+            <h3 style="margin-top:0;">Создать задачу</h3>
+            
+            <label>НАЗВАНИЕ</label>
+            <input type="text" id="m-title" placeholder="Напр: Пробежка 5км">
+
+            <div style="display:flex; gap:12px;">
+                <div style="flex:1;">
+                    <label>НАЧАЛО</label>
+                    <input type="time" id="m-start">
+                </div>
+                <div style="flex:1;">
+                    <label>КОНЕЦ</label>
+                    <input type="time" id="m-end">
+                </div>
+            </div>
+
+            <label>ДЕНЬ ПОВТОРЕНИЯ</label>
+            <select id="m-day">
+                <option value="0">Понедельник</option><option value="1">Вторник</option>
+                <option value="2">Среда</option><option value="3">Четверг</option>
+                <option value="4">Пятница</option><option value="5">Суббота</option><option value="6">Воскресенье</option>
+            </select>
+
+            <label>СФЕРА (НАВЫК)</label>
+            <select id="m-cat" onchange="document.getElementById('m-new-cat').classList.toggle('hidden', this.value!=='new')">
+                <option value="money">💰 Финансы</option>
+                <option value="education">📚 Интеллект</option>
+                <option value="health">💪 Здоровье</option>
+                <option value="new">+ Создать свою...</option>
+            </select>
+            <input type="text" id="m-new-cat" class="hidden" placeholder="Название новой сферы">
+
+            <button class="btn-main" onclick="saveNewQuest()">АКТИВИРОВАТЬ</button>
+            <button onclick="document.getElementById('modal').style.display='none'" style="width:100%; background:none; border:none; color:#777; margin-top:15px; font-weight:bold;">ОТМЕНА</button>
+        </div>
+    </div>
 
 <script>
     const tg = window.Telegram.WebApp;
     tg.ready();
     tg.expand();
 
-    const ITEMS = {
+    const DB_ITEMS = {
         gear: {
-            'h1': { n: 'Нейрошлем', i: '🪖', p: 500, s: 'head' },
-            'h2': { n: 'Венец власти', i: '👑', p: 2500, s: 'head' },
-            'w1': { n: 'Лазерный клинок', i: '🗡️', p: 800, s: 'weapon' },
-            'w2': { n: 'Плазменный посох', i: '🪄', p: 1500, s: 'weapon' }
+            'h1': { n: 'Тактический шлем', i: '🪖', p: 500, s: 'head' },
+            'h2': { n: 'Золотой венец', i: '👑', p: 3000, s: 'head' },
+            'w1': { n: 'Меч Прогресса', i: '🗡️', p: 1000, s: 'weapon' },
+            'w2': { n: 'Посох Мудрости', i: '🪄', p: 1800, s: 'weapon' }
         },
         perks: {
-            'boost': { n: 'Майнер', d: '+20% к доходу', p: 1000 },
-            'def': { n: 'Броня', d: '-50% урона при пропуске', p: 1500 }
+            'boost': { n: 'Майнер', d: '+20% золота за квест', p: 1200 },
+            'def': { n: 'Файервол', d: '-50% урона при пропуске', p: 2000 }
         }
     };
 
@@ -203,198 +232,203 @@
         piggy: { active: false, title: '', goal: 0, curr: 0 }
     };
 
-    let loadingFinished = false;
-
     function init() {
         let p = 0;
-        const interval = setInterval(() => {
-            p += 2; if(p <= 98) document.getElementById('load-progress').style.width = p + '%';
-        }, 100);
+        const interval = setInterval(() => { p+=4; if(p<=96) document.getElementById('load-bar').style.width=p+'%'; }, 100);
 
-        // Тайм-аут 10 секунд
-        const timer = setTimeout(() => { if(!loadingFinished) finalize("TIMEOUT"); }, 10000);
+        // Фикс тайм-аута 10 секунд
+        const forceLoad = setTimeout(() => { if(document.getElementById('loading').style.display !== 'none') finalize(); }, 10000);
 
-        tg.CloudStorage.getItem('rpg_v25_save', (err, val) => {
-            clearTimeout(timer);
-            if(!loadingFinished) {
-                if(!err && val) {
-                    try { state = JSON.parse(val); } catch(e) {}
-                } else {
-                    const local = localStorage.getItem('rpg_v25_save');
-                    if(local) try { state = JSON.parse(local); } catch(e) {}
-                }
-                finalize("OK");
+        tg.CloudStorage.getItem('life_rpg_v28_final', (err, val) => {
+            clearTimeout(forceLoad);
+            clearInterval(interval);
+            if(!err && val) {
+                try { state = JSON.parse(val); } catch(e){}
+            } else {
+                const local = localStorage.getItem('life_rpg_v28_final');
+                if(local) try { state = JSON.parse(local); } catch(e){}
             }
+            finalize();
         });
     }
 
-    function finalize(msg) {
-        loadingFinished = true;
-        document.getElementById('load-progress').style.width = '100%';
-        checkDay();
+    function finalize() {
+        document.getElementById('load-bar').style.width='100%';
+        checkNewDay();
         render();
-        setTimeout(() => document.getElementById('loading-screen').style.display = 'none', 600);
+        setTimeout(() => document.getElementById('loading').style.display='none', 600);
     }
 
     function save() {
-        const str = JSON.stringify(state);
-        localStorage.setItem('rpg_v25_save', str);
-        tg.CloudStorage.setItem('rpg_v25_save', str);
+        const s = JSON.stringify(state);
+        localStorage.setItem('life_rpg_v28_final', s);
+        tg.CloudStorage.setItem('life_rpg_v28_final', s);
         render();
     }
 
-    function checkDay() {
-        const now = new Date().toDateString();
-        if(state.lastDate !== now) {
+    function checkNewDay() {
+        const today = new Date().toDateString();
+        if(state.lastDate !== today) {
             const yesterday = (new Date().getDay() + 5) % 7;
             const missed = state.quests.filter(q => parseInt(q.day) === yesterday && !q.done);
             if(missed.length > 0) {
-                let dmg = missed.length * 12;
+                let dmg = missed.length * 15;
                 if(state.perks.includes('def')) dmg = Math.floor(dmg/2);
                 state.hp = Math.max(0, state.hp - dmg);
             }
             state.quests.forEach(q => q.done = false);
-            state.lastDate = now;
+            state.lastDate = today;
             save();
         }
     }
 
     function render() {
-        document.getElementById('val-gold').innerText = state.gold;
-        document.getElementById('val-hp').innerText = state.hp;
-        document.getElementById('bar-hp').style.width = state.hp + '%';
+        document.getElementById('gold-val').innerText = state.gold;
+        document.getElementById('hp-val').innerText = state.hp;
+        document.getElementById('hp-fill').style.width = state.hp + '%';
 
-        let lvlSum = 0;
-        for(let s in state.skills) lvlSum += state.skills[s].lvl;
-        document.getElementById('txt-lvl').innerText = lvlSum;
+        let totalLvl = 0; for(let s in state.skills) totalLvl += state.skills[s].lvl;
+        document.getElementById('total-lvl').innerText = totalLvl;
         
-        const rank = document.getElementById('txt-rank');
+        const rank = document.getElementById('rank');
         const aura = document.getElementById('aura');
-        if(lvlSum < 10) { rank.innerText = "УРОВЕНЬ: ГРАЖДАНИН"; aura.style.boxShadow = "0 0 20px rgba(255,255,255,0.1)"; }
-        else if(lvlSum < 25) { rank.innerText = "УРОВЕНЬ: ОПЕРАТИВНИК"; aura.style.boxShadow = "0 0 30px #2193b0"; }
-        else { rank.innerText = "УРОВЕНЬ: КИБЕР-БОГ"; aura.style.boxShadow = "0 0 40px #ff5e62"; }
+        if(totalLvl < 10) { rank.innerText = "НОВИЧОК"; aura.style.boxShadow = "0 0 20px rgba(255,255,255,0.1)"; }
+        else if(totalLvl < 30) { rank.innerText = "ГЕРОЙ"; aura.style.boxShadow = "0 0 35px var(--accent)"; }
+        else { rank.innerText = "ЛЕГЕНДА"; aura.style.boxShadow = "0 0 50px var(--hp)"; }
 
-        document.getElementById('vis-head').innerText = state.equipped.head ? ITEMS.gear[state.equipped.head].i : '';
-        document.getElementById('vis-weap').innerText = state.equipped.weapon ? ITEMS.gear[state.equipped.weapon].i : '';
+        document.getElementById('slot-h').innerText = state.equipped.head ? DB_ITEMS.gear[state.equipped.head].i : '';
+        document.getElementById('slot-w').innerText = state.equipped.weapon ? DB_ITEMS.gear[state.equipped.weapon].i : '';
 
-        const today = (new Date().getDay() + 6) % 7;
-        const questsToday = state.quests.filter(q => parseInt(q.day) === today);
-        document.getElementById('list-quests').innerHTML = questsToday.map(q => {
-            const idx = state.quests.indexOf(q);
+        const todayIdx = (new Date().getDay() + 6) % 7;
+        const todayQuests = state.quests.filter(q => parseInt(q.day) === todayIdx);
+        document.getElementById('task-list').innerHTML = todayQuests.map(q => {
+            const globalIdx = state.quests.indexOf(q);
+            const timeInfo = (q.start && q.end) ? `<span class="time-tag">⏰ ${q.start} — ${q.end}</span>` : '';
             return `
-            <div class="item-row ${q.done ? 'done' : ''}">
-                <div><div style="font-size:10px; opacity:0.5;">${q.cat.toUpperCase()}</div><b>${q.title}</b></div>
-                ${q.done ? `<button onclick="delQ(${idx})" style="background:none; border:none; color:#ff5e62; font-size:11px;">УДАЛИТЬ</button>` : 
-                `<button onclick="winQ(${idx})" style="background:#fff; color:#1e3c72; border:none; padding:10px 18px; border-radius:15px; font-weight:bold;">ГОТОВО</button>`}
+            <div class="task-row ${q.done ? 'done' : ''}">
+                <div class="task-info">
+                    <i>${q.cat.toUpperCase()}</i>
+                    <b>${q.title}</b>
+                    ${timeInfo}
+                </div>
+                ${q.done ? `<button onclick="removeQuest(${globalIdx})" style="background:none; border:none; color:var(--hp); font-size:11px; font-weight:800;">УДАЛИТЬ</button>` : 
+                `<button onclick="completeQuest(${globalIdx})" style="background:#fff; color:#000; border:none; padding:10px 18px; border-radius:14px; font-weight:900; font-size:12px;">ГОТОВО</button>`}
             </div>`;
-        }).join('') || '<div style="text-align:center; padding:40px; opacity:0.4;">Нет активных задач</div>';
+        }).join('') || '<div style="text-align:center; padding:40px; opacity:0.3; font-size:14px;">На сегодня задач нет...</div>';
 
         renderShop();
         renderPiggy();
-        renderHero();
+        renderStats();
     }
 
     function renderShop() {
-        let h = "";
-        for(let k in ITEMS.gear) {
-            const it = ITEMS.gear[k]; const has = state.inventory.includes(k); const eq = state.equipped[it.s] === k;
-            h += `<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+        let gh = "";
+        for(let k in DB_ITEMS.gear) {
+            const it = DB_ITEMS.gear[k]; const has = state.inventory.includes(k); const eq = state.equipped[it.s] === k;
+            gh += `<div style="display:flex; justify-content:space-between; align-items:center;">
                 <span>${it.i} ${it.n}</span>
-                <button onclick="gearAct('${k}')" style="background:${has?(eq?'#ff5e62':'#fff'):'rgba(255,255,255,0.1)'}; color:${has?(eq?'#fff':'#000'):'#fff'}; border:none; padding:8px 14px; border-radius:12px; font-size:12px; font-weight:bold;">
-                ${has?(eq?'СНЯТЬ':'НАДЕТЬ'):it.p + '💰'}</button></div>`;
+                <button onclick="toggleGear('${k}')" style="background:${has?(eq?'var(--hp)':'#fff'):'rgba(255,255,255,0.1)'}; color:${has?(eq?'#fff':'#000'):'#fff'}; border:none; padding:8px 15px; border-radius:12px; font-size:11px; font-weight:800;">
+                ${has?(eq?'СНЯТЬ':'ОДЕТЬ'):it.p + '💰'}</button></div>`;
         }
-        document.getElementById('list-gear').innerHTML = h;
+        document.getElementById('list-gear').innerHTML = gh;
 
         let ph = "";
-        for(let k in ITEMS.perks) {
-            const p = ITEMS.perks[k]; const has = state.perks.includes(k);
-            ph += `<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
-                <div><b>${p.n}</b><br><small style="opacity:0.6">${p.d}</small></div>
-                <button onclick="buyP('${k}')" ${has?'disabled':''} style="background:${has?'#333':'#fff'}; color:${has?'#666':'#000'}; border:none; padding:8px 14px; border-radius:12px; font-size:12px; font-weight:bold;">
-                ${has?'АКТИВНО':p.p}</button></div>`;
+        for(let k in DB_ITEMS.perks) {
+            const p = DB_ITEMS.perks[k]; const has = state.perks.includes(k);
+            ph += `<div style="display:flex; justify-content:space-between; align-items:center;">
+                <div><b>${p.n}</b><br><small style="opacity:0.5; font-size:10px;">${p.d}</small></div>
+                <button onclick="buyPerk('${k}')" ${has?'disabled':''} style="background:${has?'#333':'var(--accent)'}; color:#000; border:none; padding:8px 15px; border-radius:12px; font-size:11px; font-weight:800;">
+                ${has?'АКТИВЕН':p.p}</button></div>`;
         }
         document.getElementById('list-perks').innerHTML = ph;
     }
 
     function renderPiggy() {
-        const p = state.piggy; const ui = document.getElementById('piggy-ui');
+        const p = state.piggy; const box = document.getElementById('piggy-ui');
         if(!p.active) {
-            ui.innerHTML = `<h3>Ваша копилка</h3><p style="opacity:0.7; font-size:13px;">Создайте финансовую цель.</p>
-            <button class="btn-action" onclick="startP()">НОВАЯ ЦЕЛЬ</button>`;
+            box.innerHTML = `<h3>Копилка</h3><p style="opacity:0.6; font-size:13px; line-height:1.5;">Установите цель, чтобы откладывать золото и получать дополнительный опыт в финансы.</p>
+            <button class="btn-main" onclick="initPiggy()">НОВАЯ ЦЕЛЬ</button>`;
         } else {
             const pct = Math.min(100, (p.curr/p.goal)*100);
-            ui.innerHTML = `<h3>${p.title}</h3><div style="font-size:12px; margin-bottom:5px;">Прогресс: ${p.curr} / ${p.goal}</div>
-            <div class="bar-wrap"><div class="bar-fill" style="background:#ffb347; width:${pct}%;"></div></div>
-            <button class="btn-action" style="background:#ffb347; color:#000;" onclick="depP()">ПОПОЛНИТЬ</button>
-            <button onclick="state.piggy.active=false; save();" style="background:none; border:none; color:#fff; opacity:0.4; width:100%; margin-top:15px;">Удалить цель</button>`;
+            box.innerHTML = `<h3 style="margin-bottom:5px;">${p.title}</h3><div style="font-size:11px; margin-bottom:10px; opacity:0.7;">Собрано: ${p.curr} / ${p.goal}</div>
+            <div class="bar-wrap"><div class="bar-fill" style="background:var(--gold); width:${pct}%;"></div></div>
+            <button class="btn-main" style="background:var(--gold); color:#000;" onclick="addGoldToPiggy()">ПОПОЛНИТЬ</button>
+            <button onclick="state.piggy.active=false; save();" style="background:none; border:none; color:#777; width:100%; margin-top:15px; font-size:12px;">Удалить цель</button>`;
         }
     }
 
-    function renderHero() {
-        document.getElementById('list-skills').innerHTML = Object.keys(state.skills).map(k => `
-            <div class="glass-card" style="padding:15px; margin-bottom:10px;">
-                <div style="display:flex; justify-content:space-between; font-size:11px; margin-bottom:8px;"><span>${k.toUpperCase()}</span><span>УРОВЕНЬ ${state.skills[k].lvl}</span></div>
-                <div class="bar-wrap"><div class="bar-fill" style="width:${state.skills[k].xp}%; background:#fff"></div></div>
+    function renderStats() {
+        document.getElementById('stats-list').innerHTML = Object.keys(state.skills).map(k => `
+            <div class="glass-card" style="padding:18px; margin-bottom:12px;">
+                <div style="display:flex; justify-content:space-between; font-size:12px; font-weight:bold; margin-bottom:8px;">
+                    <span style="text-transform:uppercase; letter-spacing:1px;">${k === 'money' ? 'Финансы' : k === 'education' ? 'Интеллект' : k === 'health' ? 'Тело' : k}</span>
+                    <span>УРОВЕНЬ ${state.skills[k].lvl}</span>
+                </div>
+                <div class="bar-wrap"><div class="bar-fill" style="background:#fff; width:${state.skills[k].xp}%;"></div></div>
             </div>`).join('');
     }
 
-    window.nav = (e, n) => {
+    window.tab = (e, n) => {
         tg.HapticFeedback.impactOccurred('light');
-        document.querySelectorAll('.tab').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
         e.target.classList.add('active');
-        document.querySelectorAll('[id^="view-"]').forEach(v => v.classList.add('hidden'));
-        document.getElementById('view-'+n).classList.remove('hidden');
+        document.querySelectorAll('[id^="v-"]').forEach(v => v.classList.add('hidden'));
+        document.getElementById('v-'+n).classList.remove('hidden');
     };
 
-    window.showAdd = () => document.getElementById('modal-view').style.display = 'flex';
-    window.hideAdd = () => document.getElementById('modal-view').style.display = 'none';
+    window.openAdd = () => {
+        document.getElementById('m-day').value = (new Date().getDay() + 6) % 7;
+        document.getElementById('modal').style.display = 'flex';
+    };
 
-    window.addQuest = () => {
-        const t = document.getElementById('in-title').value; if(!t) return;
-        let c = document.getElementById('in-cat').value;
+    window.saveNewQuest = () => {
+        const t = document.getElementById('m-title').value; if(!t) return;
+        let c = document.getElementById('m-cat').value;
         if(c === 'new') {
-            c = document.getElementById('in-custom').value || 'разное';
+            c = document.getElementById('m-new-cat').value || 'разное';
             if(!state.skills[c]) state.skills[c] = {lvl:1, xp:0};
         }
-        state.quests.push({ title: t, cat: c, day: document.getElementById('in-day').value, done: false });
-        hideAdd(); save();
+        state.quests.push({ 
+            title: t, cat: c, 
+            day: document.getElementById('m-day').value, 
+            start: document.getElementById('m-start').value,
+            end: document.getElementById('m-end').value,
+            done: false 
+        });
+        document.getElementById('modal').style.display = 'none'; save();
     };
 
-    window.winQ = (idx) => {
+    window.completeQuest = (idx) => {
         tg.HapticFeedback.notificationOccurred('success');
         const q = state.quests[idx]; q.done = true;
-        state.gold += state.perks.includes('boost') ? 60 : 50;
-        if(state.skills[q.cat]) {
-            state.skills[q.cat].xp += 25;
-            if(state.skills[q.cat].xp >= 100) { state.skills[q.cat].xp = 0; state.skills[q.cat].lvl++; }
-        }
+        state.gold += state.perks.includes('boost') ? 65 : 50;
+        state.skills[q.cat].xp += 25;
+        if(state.skills[q.cat].xp >= 100) { state.skills[q.cat].xp=0; state.skills[q.cat].lvl++; }
         save();
     };
 
-    window.delQ = (idx) => { if(confirm('Удалить?')) { state.quests.splice(idx, 1); save(); } };
+    window.removeQuest = (idx) => { if(confirm('Удалить эту задачу?')) { state.quests.splice(idx,1); save(); } };
 
-    window.gearAct = (k) => {
-        const it = ITEMS.gear[k];
-        if(state.inventory.includes(k)) { state.equipped[it.s] = state.equipped[it.s] === k ? null : k; }
+    window.toggleGear = (k) => {
+        const it = DB_ITEMS.gear[k];
+        if(state.inventory.includes(k)) state.equipped[it.s] = state.equipped[it.s] === k ? null : k;
         else if(state.gold >= it.p) { state.gold -= it.p; state.inventory.push(k); state.equipped[it.s] = k; }
         save();
     };
 
-    window.buyP = (k) => {
-        if(state.gold >= ITEMS.perks[k].p) { state.gold -= ITEMS.perks[k].p; state.perks.push(k); save(); }
-    };
+    window.buyPerk = (k) => { if(state.gold >= DB_ITEMS.perks[k].p) { state.gold -= DB_ITEMS.perks[k].p; state.perks.push(k); save(); } };
 
-    window.startP = () => {
-        const t = prompt('На что копим?'); const g = parseInt(prompt('Сумма:'));
+    window.initPiggy = () => {
+        const t = prompt('На что копим?'); const g = parseInt(prompt('Какая сумма нужна?'));
         if(t && g) { state.piggy = { active: true, title: t, goal: g, curr: 0 }; save(); }
     };
 
-    window.depP = () => {
-        const v = parseInt(prompt('Внести золото:'));
+    window.addGoldToPiggy = () => {
+        const v = parseInt(prompt('Сколько золота внести?'));
         if(v > 0 && state.gold >= v) { 
             state.gold -= v; state.piggy.curr += v; 
             state.skills.money.xp += 15; save(); 
-        } else { alert('Мало золота!'); }
+        }
     };
 
     init();
