@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Hero Life RPG</title>
+    <title>Hero Life RPG v2</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         :root {
@@ -16,67 +16,73 @@
             --gold-color: #ffa502;
         }
 
-        body { background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; margin: 0; padding: 16px; overflow-x: hidden; }
+        body { background: var(--bg); color: var(--text); font-family: -apple-system, sans-serif; margin: 0; padding: 16px; }
         
-        /* Карточки */
-        .card { background: rgba(255,255,255,0.08); border-radius: 16px; padding: 16px; margin-bottom: 16px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); }
+        /* Карточка персонажа */
+        .character-card {
+            background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%);
+            border-radius: 20px;
+            padding: 20px;
+            text-align: center;
+            margin-bottom: 20px;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        #hero-avatar { font-size: 80px; display: block; margin-bottom: 10px; filter: drop-shadow(0 0 10px rgba(255,255,255,0.2)); }
+        #hero-rank { font-weight: bold; font-size: 18px; color: var(--gold-color); display: block; }
+        #total-lvl { font-size: 12px; color: var(--hint); }
+
+        .card { background: rgba(255,255,255,0.08); border-radius: 16px; padding: 16px; margin-bottom: 16px; }
         
-        /* Здоровье и Золото */
-        .header-stats { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .header-stats { display: flex; justify-content: space-between; margin-bottom: 20px; }
         .stat-item { text-align: center; flex: 1; }
         .stat-val { font-size: 20px; font-weight: bold; display: block; }
-        .stat-label { font-size: 12px; color: var(--hint); text-transform: uppercase; }
 
-        /* Полоски прогресса */
         .skill-row { margin-bottom: 12px; }
         .skill-info { display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 4px; }
         .bar-bg { background: rgba(255,255,255,0.1); height: 8px; border-radius: 4px; overflow: hidden; }
-        .bar-fill { height: 100%; width: 0%; transition: width 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        .bar-fill { height: 100%; width: 0%; transition: width 0.6s ease-out; }
 
-        /* Квесты */
         .quest-item { background: rgba(255,255,255,0.05); border-radius: 12px; padding: 12px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; border-left: 4px solid var(--btn); }
         .quest-item.done { opacity: 0.4; border-left-color: #2ed573; }
-        .quest-text { font-size: 15px; font-weight: 500; }
 
-        /* Кнопки */
-        button { background: var(--btn); color: var(--btn-text); border: none; padding: 12px; border-radius: 12px; width: 100%; font-size: 16px; font-weight: bold; cursor: pointer; transition: transform 0.1s; }
-        button:active { transform: scale(0.98); }
-        .btn-done { width: 50px; padding: 6px; font-size: 14px; }
+        button { background: var(--btn); color: var(--btn-text); border: none; padding: 12px; border-radius: 12px; width: 100%; font-size: 16px; font-weight: bold; }
+        .btn-done { width: 60px; padding: 8px; font-size: 12px; }
 
-        /* Модалка планировщика */
         #planner { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg); z-index: 1000; display: none; padding: 20px; box-sizing: border-box; }
-        input, select { width: 100%; padding: 14px; margin-bottom: 12px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.1); background: rgba(0,0,0,0.2); color: #fff; font-size: 16px; }
-        
-        .empty-state { text-align: center; color: var(--hint); padding: 40px 0; }
+        input, select { width: 100%; padding: 14px; margin-bottom: 12px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.1); background: rgba(0,0,0,0.2); color: #fff; }
     </style>
 </head>
 <body>
 
 <div id="app">
+    <div class="character-card">
+        <span id="hero-avatar">👶</span>
+        <span id="hero-rank">Новичок</span>
+        <span id="total-lvl">Общий уровень: 1</span>
+    </div>
+
     <div class="header-stats">
         <div class="stat-item">
             <span class="stat-val" id="hp-text" style="color: var(--hp-color);">100</span>
-            <span class="stat-label">❤️ HP</span>
+            <span style="font-size:12px;color:var(--hint)">❤️ HP</span>
         </div>
         <div class="stat-item">
             <span class="stat-val" id="gold-text" style="color: var(--gold-color);">0</span>
-            <span class="stat-label">💰 Золото</span>
+            <span style="font-size:12px;color:var(--hint)">💰 ЗОЛОТО</span>
         </div>
     </div>
 
-    <div class="card">
-        <div id="skills-container"></div>
-    </div>
+    <div class="card" id="skills-container"></div>
 
-    <h3 style="margin-left: 8px;">⚔️ Активные квесты</h3>
+    <h3 style="margin-left: 8px;">⚔️ Текущие квесты</h3>
     <div id="quest-list"></div>
 
-    <button onclick="togglePlanner(true)" style="margin-top: 20px;">📝 Запланировать неделю</button>
+    <button onclick="togglePlanner(true)" style="margin-top: 20px;">📝 Запланировать дела</button>
 </div>
 
 <div id="planner">
     <h2>Новый квест</h2>
-    <input type="text" id="q-title" placeholder="Название дела...">
+    <input type="text" id="q-title" placeholder="Что нужно сделать?">
     <select id="q-cat">
         <option value="money">💰 Деньги</option>
         <option value="education">🎓 Образование</option>
@@ -84,10 +90,8 @@
         <option value="english">🇬🇧 Английский</option>
     </select>
     <button onclick="addQuest()">Добавить в список</button>
-    
-    <div id="temp-preview" style="margin: 20px 0; max-height: 200px; overflow-y: auto;"></div>
-    
-    <button onclick="saveQuests()" style="background: #2ed573;">🚀 Начать приключение</button>
+    <div id="temp-preview" style="margin: 20px 0; color: var(--hint);"></div>
+    <button onclick="saveQuests()" style="background: #2ed573;">🚀 Сохранить</button>
     <button onclick="togglePlanner(false)" style="background: transparent; color: var(--hint); margin-top: 10px;">Назад</button>
 </div>
 
@@ -95,8 +99,7 @@
     const tg = window.Telegram.WebApp;
     tg.expand();
 
-    // Начальные данные (если памяти нет)
-    let state = JSON.parse(localStorage.getItem('heroState')) || {
+    let state = JSON.parse(localStorage.getItem('heroStateV2')) || {
         hp: 100,
         gold: 0,
         skills: {
@@ -108,100 +111,81 @@
         quests: []
     };
 
-    let tempQuests = [];
-
-    function saveToStorage() {
-        localStorage.setItem('heroState', JSON.stringify(state));
+    function save() {
+        localStorage.setItem('heroStateV2', JSON.stringify(state));
         render();
     }
 
     function render() {
-        // Рендер HP и Золота
         document.getElementById('hp-text').innerText = state.hp;
         document.getElementById('gold-text').innerText = state.gold;
 
-        // Рендер Навыков
+        // Расчет общего уровня и эволюция персонажа
+        let totalLvl = 0;
+        for (let s in state.skills) totalLvl += state.skills[s].lvl;
+        document.getElementById('total-lvl').innerText = `Общий уровень: ${totalLvl}`;
+
+        const avatar = document.getElementById('hero-avatar');
+        const rank = document.getElementById('hero-rank');
+
+        if (totalLvl <= 5) {
+            avatar.innerText = "👶"; rank.innerText = "Новичок";
+        } else if (totalLvl <= 15) {
+            avatar.innerText = "🏹"; rank.innerText = "Искатель";
+        } else if (totalLvl <= 30) {
+            avatar.innerText = "⚔️"; rank.innerText = "Воин света";
+        } else {
+            avatar.innerText = "🧙‍♂️"; rank.innerText = "Легендарный Магистр";
+        }
+
         const skillHTML = Object.keys(state.skills).map(key => {
             const s = state.skills[key];
             return `
                 <div class="skill-row">
-                    <div class="skill-info">
-                        <span>${s.name} (Ур. ${s.lvl})</span>
-                        <span>${s.xp}/100 XP</span>
-                    </div>
-                    <div class="bar-bg">
-                        <div class="bar-fill" style="width: ${s.xp}%; background: ${s.color};"></div>
-                    </div>
-                </div>
-            `;
+                    <div class="skill-info"><span>${s.name} (Lvl ${s.lvl})</span><span>${s.xp}/100</span></div>
+                    <div class="bar-bg"><div class="bar-fill" style="width:${s.xp}%; background:${s.color};"></div></div>
+                </div>`;
         }).join('');
         document.getElementById('skills-container').innerHTML = skillHTML;
 
-        // Рендер Квестов
-        const questList = document.getElementById('quest-list');
-        if (state.quests.length === 0) {
-            questList.innerHTML = '<div class="empty-state">Пока нет задач. Время отдыхать! 😴</div>';
-        } else {
-            questList.innerHTML = state.quests.map((q, idx) => `
-                <div class="quest-item ${q.done ? 'done' : ''}">
-                    <span class="quest-text">${q.title}</span>
-                    ${q.done ? '✅' : `<button class="btn-done" onclick="completeQuest(${idx})">OK</button>`}
-                </div>
-            `).join('');
-        }
+        document.getElementById('quest-list').innerHTML = state.quests.length ? state.quests.map((q, i) => `
+            <div class="quest-item ${q.done ? 'done' : ''}">
+                <span>${q.title}</span>
+                ${q.done ? '✅' : `<button class="btn-done" onclick="complete(${i})">+XP</button>`}
+            </div>`).join('') : '<div style="text-align:center;color:var(--hint);padding:20px;">Нет активных задач</div>';
     }
 
-    function togglePlanner(show) {
-        document.getElementById('planner').style.display = show ? 'block' : 'none';
-        if(show) tg.BackButton.show(); else tg.BackButton.hide();
-    }
-
-    tg.BackButton.onClick(() => togglePlanner(false));
-
+    function togglePlanner(s) { document.getElementById('planner').style.display = s ? 'block' : 'none'; }
+    
+    let temp = [];
     function addQuest() {
-        const title = document.getElementById('q-title').value;
-        const cat = document.getElementById('q-cat').value;
-        if (!title) return;
-
-        tempQuests.push({ title, cat, done: false });
-        document.getElementById('temp-preview').innerHTML += `<div style="padding:5px;">• ${title}</div>`;
+        const t = document.getElementById('q-title').value;
+        if (!t) return;
+        temp.push({ title: t, cat: document.getElementById('q-cat').value, done: false });
+        document.getElementById('temp-preview').innerHTML += `• ${t}<br>`;
         document.getElementById('q-title').value = '';
-        tg.HapticFeedback.impactOccurred('light');
     }
 
     function saveQuests() {
-        if (tempQuests.length === 0) return;
-        state.quests = [...state.quests, ...tempQuests];
-        tempQuests = [];
+        state.quests = [...state.quests, ...temp];
+        temp = [];
         document.getElementById('temp-preview').innerHTML = '';
         togglePlanner(false);
-        saveToStorage();
+        save();
     }
 
-    window.completeQuest = function(idx) {
-        const q = state.quests[idx];
-        if (q.done) return;
-
-        q.done = true;
+    window.complete = function(i) {
+        if (state.quests[i].done) return;
+        state.quests[i].done = true;
         state.gold += 50;
-        
-        // Прокачка навыка
-        const skill = state.skills[q.cat];
-        skill.xp += 25;
-        if (skill.xp >= 100) {
-            skill.xp = 0;
-            skill.lvl += 1;
-            tg.HapticFeedback.notificationOccurred('success');
-            alert('УРОВЕНЬ ПОВЫШЕН! 🎉');
-        }
-
+        const s = state.skills[state.quests[i].cat];
+        s.xp += 25;
+        if (s.xp >= 100) { s.xp = 0; s.lvl++; tg.HapticFeedback.notificationOccurred('success'); }
         tg.HapticFeedback.impactOccurred('medium');
-        saveToStorage();
+        save();
     };
 
-    // Первичный запуск
     render();
 </script>
-
 </body>
 </html>
