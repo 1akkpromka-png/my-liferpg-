@@ -3,304 +3,614 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Hero RPG: Sovereign</title>
+    <title>Hero RPG: Absolute Sovereign</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         :root {
             --bg: #0d0d0f;
-            --card: rgba(255, 255, 255, 0.07);
+            --card: rgba(255, 255, 255, 0.08);
             --text: #ffffff;
+            --hint: #aaaaaa;
             --btn: #3390ec;
+            --btn-text: #ffffff;
             --gold: #f1c40f;
             --hp: #ff4757;
             --accent: #00d2ff;
             --piggy: #2ecc71;
+            --streak: #e67e22;
         }
 
-        body { background: var(--bg); color: var(--text); font-family: -apple-system, sans-serif; margin: 0; padding: 12px; padding-bottom: 100px; overflow-x: hidden; }
-        .card { background: var(--card); border-radius: 20px; padding: 15px; margin-bottom: 12px; border: 1px solid rgba(255,255,255,0.1); position: relative; }
-        
-        /* Эффект частиц */
-        .particle { position: fixed; pointer-events: none; z-index: 9999; animation: fly 0.8s ease-out forwards; font-size: 20px; }
-        @keyframes fly { 0% { opacity: 1; transform: translateY(0); } 100% { opacity: 0; transform: translateY(-80px); } }
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
-        /* Герой */
-        .hero-rank { font-size: 10px; font-weight: 800; color: var(--accent); letter-spacing: 2px; text-transform: uppercase; }
-        .hero-avatar-row { font-size: 50px; margin: 10px 0; display: flex; justify-content: center; align-items: center; }
-        
-        /* Табы */
-        .tabs { display: flex; gap: 8px; margin-bottom: 15px; overflow-x: auto; padding-bottom: 5px; }
-        .tab-btn { padding: 10px 16px; border-radius: 12px; background: var(--card); color: var(--text); border: none; font-size: 11px; font-weight: bold; white-space: nowrap; transition: 0.3s; }
-        .tab-btn.active { background: var(--btn); box-shadow: 0 4px 12px rgba(51, 144, 236, 0.3); }
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            margin: 0;
+            padding: 12px;
+            padding-bottom: 100px;
+            overflow-x: hidden;
+        }
 
-        /* Задачи */
-        .quest { display: flex; justify-content: space-between; align-items: center; padding: 15px; background: rgba(255,255,255,0.03); border-radius: 16px; margin-bottom: 10px; border-left: 4px solid var(--btn); }
-        .time-label { font-size: 10px; color: var(--accent); font-weight: bold; display: block; margin-bottom: 3px; }
+        /* АНИМАЦИИ */
+        @keyframes fly {
+            0% { opacity: 1; transform: translateY(0) scale(1); }
+            100% { opacity: 0; transform: translateY(-100px) scale(1.5); }
+        }
+        .particle {
+            position: fixed;
+            pointer-events: none;
+            z-index: 10000;
+            animation: fly 0.8s ease-out forwards;
+            font-size: 24px;
+        }
 
-        /* Копилка */
-        .piggy-ui { border: 1px solid var(--piggy); background: linear-gradient(145deg, rgba(46,204,113,0.1), transparent); }
-        .bar-bg { background: rgba(0,0,0,0.4); height: 10px; border-radius: 5px; margin: 10px 0; overflow: hidden; }
-        .bar-fill { height: 100%; transition: width 0.8s ease; }
+        /* КАРТОЧКИ */
+        .card {
+            background: var(--card);
+            border-radius: 24px;
+            padding: 16px;
+            margin-bottom: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            position: relative;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
 
-        /* Кнопки */
-        .btn-main { background: var(--btn); color: white; border: none; padding: 16px; border-radius: 16px; width: 100%; font-weight: bold; font-size: 15px; margin-top: 5px; }
-        .btn-action { background: var(--piggy); color: white; border: none; padding: 6px 14px; border-radius: 8px; font-size: 12px; font-weight: bold; }
+        /* ГЕРОЙ */
+        .hero-section { text-align: center; padding: 10px 0; }
+        .rank-badge {
+            font-size: 10px;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: var(--accent);
+            margin-bottom: 8px;
+        }
+        .avatar-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 55px;
+            height: 80px;
+            margin: 5px 0;
+        }
+        .equipment-slot { width: 40px; text-align: center; }
+
+        /* ПРОГРЕСС-БАРЫ */
+        .bar-container {
+            background: rgba(0, 0, 0, 0.4);
+            height: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        .bar-fill {
+            height: 100%;
+            border-radius: 5px;
+            transition: width 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        /* ТАБЫ */
+        .tabs {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 16px;
+            overflow-x: auto;
+            padding: 4px;
+            scrollbar-width: none;
+        }
+        .tabs::-webkit-scrollbar { display: none; }
+        .tab-btn {
+            padding: 10px 20px;
+            border-radius: 14px;
+            background: var(--card);
+            color: var(--text);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            font-size: 12px;
+            font-weight: 700;
+            white-space: nowrap;
+            transition: 0.2s;
+        }
+        .tab-btn.active {
+            background: var(--btn);
+            color: var(--btn-text);
+            border-color: var(--btn);
+            box-shadow: 0 4px 12px rgba(51, 144, 236, 0.4);
+        }
+
+        /* КВЕСТЫ */
+        .quest-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px;
+            background: rgba(255, 255, 255, 0.04);
+            border-radius: 18px;
+            margin-bottom: 10px;
+            border-left: 5px solid var(--btn);
+            transition: 0.3s;
+        }
+        .quest-item.completed {
+            opacity: 0.5;
+            filter: grayscale(0.8);
+            border-left-color: #555;
+        }
+        .quest-info b { display: block; font-size: 15px; margin-bottom: 2px; }
+        .quest-time {
+            font-size: 11px;
+            color: var(--accent);
+            font-weight: 700;
+            background: rgba(0, 210, 255, 0.1);
+            padding: 2px 6px;
+            border-radius: 6px;
+        }
+
+        /* КНОПКИ */
+        .btn-add {
+            background: var(--btn);
+            color: white;
+            border: none;
+            padding: 16px;
+            border-radius: 18px;
+            width: 100%;
+            font-weight: 800;
+            font-size: 16px;
+            margin-top: 10px;
+            box-shadow: 0 4px 15px rgba(51, 144, 236, 0.3);
+        }
+        .action-btn {
+            background: var(--btn);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 10px;
+            font-weight: 700;
+            font-size: 13px;
+        }
+        .del-btn {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            border: none;
+            padding: 8px;
+            border-radius: 10px;
+            font-size: 16px;
+        }
+
+        /* МОДАЛКА */
+        #planner-modal {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: var(--bg);
+            z-index: 2000;
+            display: none;
+            padding: 24px;
+            overflow-y: auto;
+        }
+        .input-group { margin-bottom: 16px; }
+        label { display: block; font-size: 12px; color: var(--hint); margin-bottom: 6px; font-weight: 600; }
+        input, select {
+            width: 100%;
+            padding: 14px;
+            border-radius: 14px;
+            border: 1px solid rgba(255,255,255,0.1);
+            background: rgba(255,255,255,0.05);
+            color: white;
+            font-size: 15px;
+        }
 
         .hidden { display: none; }
-        #planner-modal { position: fixed; inset: 0; background: var(--bg); z-index: 1000; display: none; padding: 25px; overflow-y: auto; }
-        input, select { width: 100%; padding: 14px; margin-bottom: 12px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); background: #161618; color: white; box-sizing: border-box; }
+
+        /* SHOP */
+        .shop-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 16px;
+            margin-bottom: 8px;
+        }
+
+        /* WEEK VIEW */
+        .week-day-title {
+            color: var(--accent);
+            font-size: 13px;
+            font-weight: 800;
+            margin: 15px 0 8px 5px;
+            text-transform: uppercase;
+        }
     </style>
 </head>
 <body>
 
-<div class="card" style="text-align: center;">
-    <div id="hero-rank" class="hero-rank">НОВИЧОК</div>
-    <div class="hero-avatar-row">
-        <span id="eq-head"></span><span id="hero-body">👶</span><span id="eq-weapon"></span>
+<div class="card hero-section">
+    <div id="hero-rank" class="rank-badge">НОВИЧОК</div>
+    <div class="avatar-container">
+        <span id="slot-head" class="equipment-slot"></span>
+        <span id="hero-body">👶</span>
+        <span id="slot-weapon" class="equipment-slot"></span>
     </div>
-    <div style="font-weight: bold; font-size: 18px;">Lvl <span id="total-lvl">1</span></div>
+    <div style="font-size: 20px; font-weight: 900;">УРОВЕНЬ <span id="total-lvl">1</span></div>
     
-    <div style="display: flex; justify-content: space-between; font-size: 12px; margin-top: 12px;">
+    <div style="display: flex; justify-content: space-between; font-size: 12px; margin-top: 15px; font-weight: 700;">
         <span>❤️ HP: <span id="hp-val">100</span></span>
-        <span style="color: var(--gold);">💰 Золото: <span id="gold-val">0</span></span>
+        <span style="color: var(--gold);">💰 ЗОЛОТО: <span id="gold-val">0</span></span>
     </div>
-    <div class="bar-bg"><div id="hp-bar" class="bar-fill" style="background: var(--hp); width: 100%;"></div></div>
+    <div class="bar-container">
+        <div id="hp-bar" class="bar-fill" style="background: var(--hp); width: 100%;"></div>
+    </div>
 </div>
 
 <div class="tabs">
-    <button class="tab-btn active" onclick="showTab('tasks')">ЗАДАЧИ</button>
+    <button class="tab-btn active" onclick="showTab('tasks')">КВЕСТЫ</button>
     <button class="tab-btn" onclick="showTab('piggy')">КОПИЛКА</button>
     <button class="tab-btn" onclick="showTab('shop')">МАГАЗИН</button>
-    <button class="tab-btn" onclick="showTab('week')">НЕДЕЛЯ</button>
+    <button class="tab-btn" onclick="showTab('hero')">ПЕРСОНАЖ</button>
 </div>
 
 <div id="tab-tasks">
     <div id="quest-list"></div>
-    <button class="btn-main" onclick="openPlanner()">＋ СОЗДАТЬ КВЕСТ</button>
+    <button class="btn-add" onclick="openPlanner()">＋ НОВЫЙ КВЕСТ</button>
 </div>
 
 <div id="tab-piggy" class="hidden">
-    <div class="card piggy-ui">
-        <h3 style="margin-top:0">💰 Мои Накопления</h3>
-        <div id="piggy-config" class="hidden">
-            <button class="btn-main" onclick="setupPiggy()">УСТАНОВИТЬ ЦЕЛЬ</button>
-        </div>
-        <div id="piggy-display">
-            <div style="display:flex; justify-content:space-between; font-size:14px;">
-                <b id="piggy-title">Загрузка...</b>
-                <span id="piggy-stats">0 / 0</span>
+    <div class="card" style="border-color: var(--piggy); background: linear-gradient(145deg, rgba(46,204,113,0.1), transparent);">
+        <h3 style="margin-top: 0; display: flex; align-items: center; gap: 8px;">💰 Реальная цель</h3>
+        <div id="piggy-ui">
+            <div id="piggy-empty">
+                <p style="font-size: 13px; color: var(--hint);">Вы не установили реальную финансовую цель. Копите на мечту в жизни и фиксируйте прогресс здесь.</p>
+                <button class="btn-add" onclick="setupPiggy()" style="background: var(--piggy);">УСТАНОВИТЬ ЦЕЛЬ</button>
             </div>
-            <div class="bar-bg"><div id="piggy-bar" class="bar-fill" style="background: var(--piggy);"></div></div>
-            <button class="btn-action" onclick="depositPiggy()">ВНЕСТИ ИЗ РЕАЛА</button>
-            <button onclick="resetPiggy()" style="background:none; border:none; color:rgba(255,255,255,0.3); font-size:10px; margin-left:10px">Сброс</button>
+            <div id="piggy-active" class="hidden">
+                <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+                    <b id="piggy-title" style="font-size: 16px;">Название</b>
+                    <span id="piggy-numbers" style="font-weight: bold; color: var(--piggy);">0 / 0</span>
+                </div>
+                <div class="bar-container">
+                    <div id="piggy-bar" class="bar-fill" style="background: var(--piggy);"></div>
+                </div>
+                <p style="font-size: 11px; color: var(--hint); margin: 10px 0;">Отложили деньги в реальности? Внесите сумму здесь, чтобы получить опыт!</p>
+                <button class="btn-add" onclick="depositPiggy()" style="background: var(--piggy); margin-bottom: 10px;">ВНЕСТИ СУММУ</button>
+                <button onclick="resetPiggy()" style="background:none; border:none; color:rgba(255,255,255,0.2); width:100%; font-size:11px;">Удалить текущую цель</button>
+            </div>
         </div>
     </div>
 </div>
 
 <div id="tab-shop" class="hidden">
-    <div style="font-size: 12px; color: var(--accent); margin-bottom: 10px;">СНАРЯЖЕНИЕ</div>
-    <div id="gear-list"></div>
-    <div style="font-size: 12px; color: var(--accent); margin: 15px 0 10px;">ТАЛАНТЫ</div>
-    <div id="perks-list"></div>
+    <div class="card">
+        <h3 style="margin-top:0">Арсенал</h3>
+        <div id="shop-items"></div>
+    </div>
 </div>
 
-<div id="tab-week" class="hidden">
-    <div id="week-view"></div>
+<div id="tab-hero" class="hidden">
+    <div id="skills-list"></div>
+    <div class="card" style="margin-top: 20px;">
+        <h3 style="margin-top:0">Календарь недели</h3>
+        <div id="week-view"></div>
+    </div>
 </div>
 
 <div id="planner-modal">
-    <h2 style="margin-top:0">Новая цель</h2>
-    <input type="text" id="p-title" placeholder="Что нужно сделать?">
+    <h2 style="margin: 0 0 20px 0;">Новый квест</h2>
     
-    <label style="font-size: 11px; color: var(--accent)">ИНТЕРВАЛ ВРЕМЕНИ (24Ч):</label>
-    <div style="display:flex; gap:10px">
-        <input type="time" id="p-start">
-        <input type="time" id="p-end">
+    <div class="input-group">
+        <label>ЧТО НУЖНО СДЕЛАТЬ?</label>
+        <input type="text" id="p-title" placeholder="Название задачи...">
     </div>
 
-    <select id="p-day">
-        <option value="0">Понедельник</option><option value="1">Вторник</option><option value="2">Среда</option>
-        <option value="3">Четверг</option><option value="4">Пятница</option><option value="5">Суббота</option><option value="6">Воскресенье</option>
-    </select>
+    <div class="input-group">
+        <label>ВРЕМЯ (ЕСЛИ ЕСТЬ):</label>
+        <div style="display: flex; gap: 10px;">
+            <input type="time" id="p-start">
+            <input type="time" id="p-end">
+        </div>
+    </div>
 
-    <select id="p-cat">
-        <option value="money">💰 Деньги / Карьера</option>
-        <option value="education">🎓 Обучение</option>
-        <option value="health">💪 Здоровье / Спорт</option>
-    </select>
+    <div class="input-group">
+        <label>ДЕНЬ НЕДЕЛИ:</label>
+        <select id="p-day">
+            <option value="0">Понедельник</option><option value="1">Вторник</option><option value="2">Среда</option>
+            <option value="3">Четверг</option><option value="4">Пятница</option><option value="5">Суббота</option><option value="6">Воскресенье</option>
+        </select>
+    </div>
 
-    <button class="btn-main" onclick="saveTask()">ДОБАВИТЬ В КНИГУ КВЕСТОВ</button>
-    <button onclick="closePlanner()" style="width:100%; background:none; border:none; color:white; margin-top:20px;">Закрыть</button>
+    <div class="input-group">
+        <label>СФЕРА ДЕЯТЕЛЬНОСТИ:</label>
+        <select id="p-cat" onchange="toggleCustomCat(this.value)">
+            <option value="money">💰 Деньги / Карьера</option>
+            <option value="education">🎓 Обучение / Мозг</option>
+            <option value="health">💪 Здоровье / Спорт</option>
+            <option value="custom">✨ СВОЯ СФЕРА...</option>
+        </select>
+    </div>
+
+    <div id="custom-cat-box" class="input-group hidden">
+        <label>НАЗВАНИЕ ВАШЕЙ СФЕРЫ:</label>
+        <input type="text" id="p-custom-name" placeholder="Например: Рисование">
+    </div>
+
+    <button class="btn-add" onclick="saveTask()">ДОБАВИТЬ КВЕСТ</button>
+    <button onclick="closePlanner()" style="width:100%; background:none; border:none; color:var(--hint); margin-top:20px; font-weight:bold;">ОТМЕНА</button>
 </div>
 
 <script>
     const tg = window.Telegram.WebApp;
-    const DAYS = ['Понедельник', 'Вторник', 'Среда', 'Четверг', 'Пятница', 'Суббота', 'Воскресенье'];
-    const GEAR_DATA = {
-        'h1': { name: 'Стальной Шлем', icon: '🪖', price: 500, slot: 'head' },
-        'w1': { name: 'Меч Новичка', icon: '🗡️', price: 700, slot: 'weapon' }
+    tg.expand();
+
+    const DAYS_NAMES = ['Понедельник', 'Вторник', 'Среда', 'Четверг', 'Пятница', 'Суббота', 'Воскресенье'];
+    const SHOP_DATA = {
+        'head_1': { name: 'Стальной шлем', icon: '🪖', price: 600, slot: 'head' },
+        'weapon_1': { name: 'Меч рыцаря', icon: '🗡️', price: 1000, slot: 'weapon' },
+        'weapon_2': { name: 'Посох мага', icon: '🪄', price: 1500, slot: 'weapon' }
     };
 
-    let state = JSON.parse(localStorage.getItem('hero_v15_final')) || {
-        gold: 0, hp: 100,
-        skills: { money:{xp:0, lvl:1}, education:{xp:0, lvl:1}, health:{xp:0, lvl:1} },
+    let state = JSON.parse(localStorage.getItem('hero_v17_absolute')) || {
+        gold: 0,
+        hp: 100,
+        skills: {
+            money: { xp: 0, lvl: 1 },
+            education: { xp: 0, lvl: 1 },
+            health: { xp: 0, lvl: 1 }
+        },
         quests: [],
-        inventory: [], equipped: { head:null, weapon:null },
-        perks: [],
+        inventory: [],
+        equipped: { head: null, weapon: null },
         piggy: { active: false, title: '', goal: 0, current: 0 }
     };
 
-    function save() { localStorage.setItem('hero_v15_final', JSON.stringify(state)); render(); }
+    function save() {
+        localStorage.setItem('hero_v17_absolute', JSON.stringify(state));
+        render();
+    }
 
-    function spawnVFX(e) {
-        for(let i=0; i<6; i++) {
+    function spawnGold(e) {
+        if (!e) return;
+        for (let i = 0; i < 8; i++) {
             const p = document.createElement('div');
-            p.className = 'particle'; p.innerText = '💰';
-            p.style.left = e.clientX + 'px'; p.style.top = e.clientY + 'px';
+            p.className = 'particle';
+            p.innerText = '💰';
+            p.style.left = e.clientX + 'px';
+            p.style.top = e.clientY + 'px';
+            p.style.setProperty('--dir', Math.random() * 360 + 'deg');
             document.body.appendChild(p);
             setTimeout(() => p.remove(), 800);
         }
     }
 
     function render() {
-        // Рендер статов
+        // Рендер основных показателей
         document.getElementById('gold-val').innerText = state.gold;
         document.getElementById('hp-val').innerText = state.hp;
         document.getElementById('hp-bar').style.width = state.hp + '%';
 
-        // Эволюция
-        const totalLvl = state.skills.money.lvl + state.skills.education.lvl + state.skills.health.lvl;
+        // Эволюция и Герой
+        let totalLvl = 0;
+        for (let key in state.skills) totalLvl += state.skills[key].lvl;
         document.getElementById('total-lvl').innerText = totalLvl;
-        document.getElementById('hero-body').innerText = totalLvl > 25 ? "🦸" : (totalLvl > 10 ? "⚔️" : "👶");
-        document.getElementById('hero-rank').innerText = totalLvl > 25 ? "ЛЕГЕНДА" : (totalLvl > 10 ? "МАСТЕР" : "НОВИЧОК");
+        
+        const rank = totalLvl > 30 ? "ЛЕГЕНДА" : (totalLvl > 15 ? "МАСТЕР" : (totalLvl > 5 ? "ГЕРОЙ" : "НОВИЧОК"));
+        const body = totalLvl > 30 ? "🦸" : (totalLvl > 15 ? "⚔️" : (totalLvl > 5 ? "🏹" : "👶"));
+        document.getElementById('hero-rank').innerText = rank;
+        document.getElementById('hero-body').innerText = body;
 
         // Экипировка
-        document.getElementById('eq-head').innerText = state.equipped.head ? GEAR_DATA[state.equipped.head].icon : '';
-        document.getElementById('eq-weapon').innerText = state.equipped.weapon ? GEAR_DATA[state.equipped.weapon].icon : '';
+        document.getElementById('slot-head').innerText = state.equipped.head ? SHOP_DATA[state.equipped.head].icon : '';
+        document.getElementById('slot-weapon').innerText = state.equipped.weapon ? SHOP_DATA[state.equipped.weapon].icon : '';
 
         // Копилка
-        if(state.piggy.active) {
-            document.getElementById('piggy-config').classList.add('hidden');
-            document.getElementById('piggy-display').classList.remove('hidden');
+        if (state.piggy.active) {
+            document.getElementById('piggy-empty').classList.add('hidden');
+            document.getElementById('piggy-active').classList.remove('hidden');
             document.getElementById('piggy-title').innerText = state.piggy.title;
-            document.getElementById('piggy-stats').innerText = `${state.piggy.current} / ${state.piggy.goal}`;
-            document.getElementById('piggy-bar').style.width = Math.min(100, (state.piggy.current/state.piggy.goal)*100) + '%';
+            document.getElementById('piggy-numbers').innerText = `${state.piggy.current} / ${state.piggy.goal}`;
+            const progress = (state.piggy.current / state.piggy.goal) * 100;
+            document.getElementById('piggy-bar').style.width = Math.min(100, progress) + '%';
         } else {
-            document.getElementById('piggy-config').classList.remove('hidden');
-            document.getElementById('piggy-display').classList.add('hidden');
+            document.getElementById('piggy-empty').classList.remove('hidden');
+            document.getElementById('piggy-active').classList.add('hidden');
         }
 
-        // Задачи Сегодня
-        const tIdx = (new Date().getDay() + 6) % 7;
-        const today = state.quests.filter(q => parseInt(q.day) === tIdx);
-        today.sort((a,b) => (a.start || '99:99').localeCompare(b.start || '99:99'));
+        // Квесты (Сегодня)
+        const todayIdx = (new Date().getDay() + 6) % 7;
+        const todayQuests = state.quests.filter(q => parseInt(q.day) === todayIdx);
+        todayQuests.sort((a, b) => (a.start || '99:99').localeCompare(b.start || '99:99'));
 
-        document.getElementById('quest-list').innerHTML = today.map(q => `
-            <div class="quest ${q.done ? 'hidden' : ''}">
-                <div>
-                    <span class="time-label">🕒 ${q.start || '--:--'} - ${q.end || '--:--'}</span>
-                    <b>${q.title}</b>
+        let questHtml = '';
+        todayQuests.forEach(q => {
+            const globalIdx = state.quests.indexOf(q);
+            questHtml += `
+                <div class="quest-item ${q.done ? 'completed' : ''}">
+                    <div class="quest-info">
+                        ${q.start ? `<span class="quest-time">🕒 ${q.start} ${q.end ? '- ' + q.end : ''}</span>` : ''}
+                        <b>${q.title}</b>
+                    </div>
+                    <div>
+                        ${q.done ? 
+                            `<button class="del-btn" onclick="deleteQuest(${globalIdx})">🗑️</button>` : 
+                            `<button class="action-btn" onclick="completeQuest(event, ${globalIdx})">ГОТОВО</button>`
+                        }
+                    </div>
                 </div>
-                <button class="btn-action" onclick="finishQuest(event, ${state.quests.indexOf(q)})">ГОТОВО</button>
-            </div>
-        `).join('') || '<p style="text-align:center; opacity:0.5">Все задачи выполнены!</p>';
+            `;
+        });
+        document.getElementById('quest-list').innerHTML = questHtml || '<p style="text-align:center; color:var(--hint); margin-top:20px;">Задач на сегодня нет.</p>';
 
-        // Магазин Снаряжения
-        document.getElementById('gear-list').innerHTML = Object.keys(GEAR_DATA).map(id => `
-            <div class="card" style="display:flex; justify-content:space-between; align-items:center;">
-                <span>${GEAR_DATA[id].icon} ${GEAR_DATA[id].name}</span>
-                <button class="btn-action" onclick="handleGear('${id}')" style="background:${state.inventory.includes(id)?'var(--btn)':'var(--gold)'}">
-                    ${state.inventory.includes(id) ? (state.equipped[GEAR_DATA[id].slot] === id ? 'СНЯТЬ' : 'НАДЕТЬ') : GEAR_DATA[id].price+'💰'}
-                </button>
-            </div>
-        `).join('');
+        // Навыки (вкладка Герой)
+        let skillsHtml = '';
+        for (let key in state.skills) {
+            skillsHtml += `
+                <div class="card" onclick="removeSkill('${key}')">
+                    <div style="display:flex; justify-content:space-between; font-size:12px; font-weight:800; margin-bottom:5px;">
+                        <span>${key.toUpperCase()} (LVL ${state.skills[key].lvl})</span>
+                        <span>${state.skills[key].xp}%</span>
+                    </div>
+                    <div class="bar-container">
+                        <div class="bar-fill" style="width:${state.skills[key].xp}%; background:var(--btn);"></div>
+                    </div>
+                </div>
+            `;
+        }
+        document.getElementById('skills-list').innerHTML = skillsHtml;
 
-        // Таланты
-        const perks = [{id:'p1', name:'Аналитик', price:1000, desc:'+20% золота'}];
-        document.getElementById('perks-list').innerHTML = perks.map(p => `
-            <div class="card" style="display:flex; justify-content:space-between; align-items:center;">
-                <div><b>${p.name}</b><br><small>${p.desc}</small></div>
-                <button class="btn-action" onclick="buyPerk('${p.id}', ${p.price})" ${state.perks.includes(p.id)?'disabled':''}>
-                    ${state.perks.includes(p.id) ? 'КУПЛЕНО' : p.price+'💰'}
-                </button>
-            </div>
-        `).join('');
+        // Магазин
+        let shopHtml = '';
+        for (let id in SHOP_DATA) {
+            const item = SHOP_DATA[id];
+            const isOwned = state.inventory.includes(id);
+            const isEquipped = state.equipped[item.slot] === id;
+            
+            shopHtml += `
+                <div class="shop-item">
+                    <span>${item.icon} ${item.name}</span>
+                    <button class="action-btn" onclick="handleShop('${id}')" style="background:${isOwned ? (isEquipped ? 'var(--hp)' : 'var(--btn)') : 'var(--gold)'}; color:${isOwned ? 'white' : 'black'}">
+                        ${isOwned ? (isEquipped ? 'СНЯТЬ' : 'НАДЕТЬ') : item.price + ' 💰'}
+                    </button>
+                </div>
+            `;
+        }
+        document.getElementById('shop-items').innerHTML = shopHtml;
 
-        // Неделя
+        // Календарь
         let weekHtml = '';
-        DAYS.forEach((d, i) => {
-            const dq = state.quests.filter(q => parseInt(q.day) === i);
-            if(dq.length) {
-                weekHtml += `<div style="color:var(--accent); font-size:12px; margin-top:10px; font-weight:bold">${d}</div>`;
-                weekHtml += dq.map(q => `<div style="font-size:11px; padding:3px 0; opacity:${q.done?0.4:1}">• ${q.start||'--'} ${q.title}</div>`).join('');
+        DAYS_NAMES.forEach((dayName, i) => {
+            const dayQs = state.quests.filter(q => parseInt(q.day) === i);
+            if (dayQs.length > 0) {
+                weekHtml += `<div class="week-day-title">${dayName}</div>`;
+                dayQs.forEach(q => {
+                    weekHtml += `<div style="font-size:12px; padding:4px 0; border-bottom:1px solid rgba(255,255,255,0.03); opacity:${q.done ? 0.4 : 1}">
+                        <span style="color:var(--accent)">${q.start || '--:--'}</span> ${q.title}
+                    </div>`;
+                });
             }
         });
-        document.getElementById('week-view').innerHTML = weekHtml || '<p style="text-align:center; opacity:0.5">Планы на неделю пусты</p>';
+        document.getElementById('week-view').innerHTML = weekHtml || '<p style="text-align:center; font-size:12px; color:var(--hint);">Планы на неделю пусты</p>';
     }
 
-    // ЛОГИКА
+    // ЛОГИКА ПРИЛОЖЕНИЯ
     window.openPlanner = () => document.getElementById('planner-modal').style.display = 'block';
     window.closePlanner = () => document.getElementById('planner-modal').style.display = 'none';
+    window.toggleCustomCat = (val) => document.getElementById('custom-cat-box').classList.toggle('hidden', val !== 'custom');
 
     window.saveTask = () => {
         const title = document.getElementById('p-title').value;
-        if(!title) return;
-        state.quests.push({
-            title, start: document.getElementById('p-start').value, end: document.getElementById('p-end').value,
-            day: document.getElementById('p-day').value, cat: document.getElementById('p-cat').value, done: false
-        });
-        closePlanner(); save();
-    };
+        if (!title) return;
 
-    window.finishQuest = (e, idx) => {
-        spawnVFX(e);
-        const q = state.quests[idx]; q.done = true;
-        let reward = 50; if(state.perks.includes('p1')) reward *= 1.2;
-        state.gold += Math.round(reward);
-        state.skills[q.cat].xp += 25;
-        if(state.skills[q.cat].xp >= 100) { state.skills[q.cat].xp = 0; state.skills[q.cat].lvl++; }
+        let cat = document.getElementById('p-cat').value;
+        if (cat === 'custom') {
+            cat = document.getElementById('p-custom-name').value || 'Разное';
+            if (!state.skills[cat]) state.skills[cat] = { xp: 0, lvl: 1 };
+        }
+
+        state.quests.push({
+            title,
+            start: document.getElementById('p-start').value,
+            end: document.getElementById('p-end').value,
+            day: document.getElementById('p-day').value,
+            cat: cat,
+            done: false
+        });
+
+        document.getElementById('p-title').value = '';
+        closePlanner();
         save();
     };
 
-    window.setupPiggy = () => {
-        const t = prompt("На что копите в реальности?");
-        const g = parseInt(prompt("Какая итоговая сумма?"));
-        if(t && g) { state.piggy = { active: true, title: t, goal: g, current: 0 }; save(); }
+    window.completeQuest = (e, idx) => {
+        spawnGold(e);
+        state.quests[idx].done = true;
+        state.gold += 50;
+        
+        const cat = state.quests[idx].cat;
+        if (state.skills[cat]) {
+            state.skills[cat].xp += 25;
+            if (state.skills[cat].xp >= 100) {
+                state.skills[cat].xp = 0;
+                state.skills[cat].lvl++;
+                tg.HapticFeedback.notificationOccurred('success');
+            }
+        }
+        save();
     };
 
-    window.depositPiggy = () => {
-        const a = parseInt(prompt("Сколько вы отложили в реальности?"));
-        if(a > 0) {
-            state.piggy.current += a;
-            state.skills.money.xp += 20; // Бонус к навыку за дисциплину
-            if(state.skills.money.xp >= 100) { state.skills.money.xp = 0; state.skills.money.lvl++; }
+    window.deleteQuest = (idx) => {
+        state.quests.splice(idx, 1);
+        save();
+    };
+
+    window.removeSkill = (key) => {
+        if (['money', 'education', 'health'].includes(key)) return;
+        if (confirm(`Удалить сферу "${key}"?`)) {
+            delete state.skills[key];
             save();
         }
     };
 
-    window.resetPiggy = () => { if(confirm("Сбросить финансовую цель?")) { state.piggy.active = false; save(); } };
-
-    window.handleGear = (id) => {
-        if(state.inventory.includes(id)) {
-            const slot = GEAR_DATA[id].slot;
-            state.equipped[slot] = state.equipped[slot] === id ? null : id;
-        } else if(state.gold >= GEAR_DATA[id].price) {
-            state.gold -= GEAR_DATA[id].price; state.inventory.push(id);
+    // ФИНАНСЫ
+    window.setupPiggy = () => {
+        const t = prompt("На что вы копите в реальности?", "Например: PlayStation 5");
+        const g = parseInt(prompt("Какую сумму нужно собрать?", "50000"));
+        if (t && g) {
+            state.piggy = { active: true, title: t, goal: g, current: 0 };
+            save();
         }
-        save();
     };
 
-    window.buyPerk = (id, price) => {
-        if(state.gold >= price) { state.gold -= price; state.perks.push(id); save(); }
+    window.depositPiggy = () => {
+        const amount = parseInt(prompt("Какую сумму вы только что отложили в реальности?", "1000"));
+        if (amount > 0) {
+            state.piggy.current += amount;
+            state.skills.money.xp += 20; // Бонус за дисциплину
+            if (state.skills.money.xp >= 100) {
+                state.skills.money.xp = 0;
+                state.skills.money.lvl++;
+            }
+            save();
+        }
+    };
+
+    window.resetPiggy = () => {
+        if (confirm("Вы уверены, что хотите удалить финансовую цель?")) {
+            state.piggy.active = false;
+            save();
+        }
+    };
+
+    // МАГАЗИН
+    window.handleShop = (id) => {
+        const item = SHOP_DATA[id];
+        if (state.inventory.includes(id)) {
+            // Если уже есть - надеваем/снимаем
+            if (state.equipped[item.slot] === id) {
+                state.equipped[item.slot] = null;
+            } else {
+                state.equipped[item.slot] = id;
+            }
+        } else {
+            // Покупка
+            if (state.gold >= item.price) {
+                state.gold -= item.price;
+                state.inventory.push(id);
+                state.equipped[item.slot] = id;
+                tg.HapticFeedback.impactOccurred('medium');
+            } else {
+                alert("Недостаточно золота!");
+            }
+        }
+        save();
     };
 
     window.showTab = (t) => {
         document.querySelectorAll('[id^="tab-"]').forEach(el => el.classList.add('hidden'));
         document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
-        document.getElementById('tab-'+t).classList.remove('hidden');
+        document.getElementById('tab-' + t).classList.remove('hidden');
         event.currentTarget.classList.add('active');
     };
 
+    // Инициализация
     render();
 </script>
 </body>
